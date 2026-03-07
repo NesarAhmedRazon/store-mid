@@ -1,0 +1,516 @@
+ERROR - 2026-03-07 18:39:00 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#6 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#7 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#9 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#11 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#13 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#14 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#15 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#16 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#6 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#7 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#9 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#11 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#15 {main}
+ERROR - 2026-03-07 18:39:00 --> Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+ERROR - 2026-03-07 18:39:00 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#7 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#9 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#12 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#3 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#4 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#9 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#10 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#11 {main}
+CRITICAL - 2026-03-07 18:39:00 --> CodeIgniter\Database\Exceptions\DatabaseException: Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+[Method: GET, Route: api/shipments/TS-123]
+in SYSTEMPATH\Database\BaseConnection.php on line 465.
+ 1 SYSTEMPATH\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `shipments`
+WHERE `merchant_order_id` = :merchant_order_id:', [...], false)
+ 3 APPPATH\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('D:\\Nesar Ahmed\\Work\\store-mid\\public\\index.php')
+ERROR - 2026-03-07 18:39:58 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#6 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#7 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#9 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#11 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#13 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#14 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#15 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#16 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#6 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#7 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#9 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#11 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#15 {main}
+ERROR - 2026-03-07 18:39:58 --> Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+ERROR - 2026-03-07 18:39:58 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#7 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#9 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#12 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#3 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#4 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#9 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#10 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#11 {main}
+CRITICAL - 2026-03-07 18:39:58 --> CodeIgniter\Database\Exceptions\DatabaseException: Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+[Method: GET, Route: api/shipments/TS-123]
+in SYSTEMPATH\Database\BaseConnection.php on line 465.
+ 1 SYSTEMPATH\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `shipments`
+WHERE `merchant_order_id` = :merchant_order_id:', [...], false)
+ 3 APPPATH\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('D:\\Nesar Ahmed\\Work\\store-mid\\public\\index.php')
+ERROR - 2026-03-07 18:40:54 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#6 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#7 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#9 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#11 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#13 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#14 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#15 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#16 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#6 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#7 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#9 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#11 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#15 {main}
+ERROR - 2026-03-07 18:40:54 --> Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+ERROR - 2026-03-07 18:40:54 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#7 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#9 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#12 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#3 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#4 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#9 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#10 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#11 {main}
+CRITICAL - 2026-03-07 18:40:54 --> CodeIgniter\Database\Exceptions\DatabaseException: Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+[Method: GET, Route: api/shipments/TS-123]
+in SYSTEMPATH\Database\BaseConnection.php on line 465.
+ 1 SYSTEMPATH\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `shipments`
+WHERE `merchant_order_id` = :merchant_order_id:', [...], false)
+ 3 APPPATH\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('D:\\Nesar Ahmed\\Work\\store-mid\\public\\index.php')
+ERROR - 2026-03-07 18:41:51 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#6 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#7 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#9 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#11 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#13 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#14 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#15 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#16 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#6 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#7 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#9 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#11 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#15 {main}
+ERROR - 2026-03-07 18:41:51 --> Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+ERROR - 2026-03-07 18:41:51 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#7 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#9 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#12 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#3 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#4 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#9 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#10 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#11 {main}
+CRITICAL - 2026-03-07 18:41:51 --> CodeIgniter\Database\Exceptions\DatabaseException: Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+[Method: GET, Route: api/shipments/TS-123]
+in SYSTEMPATH\Database\BaseConnection.php on line 465.
+ 1 SYSTEMPATH\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `shipments`
+WHERE `merchant_order_id` = :merchant_order_id:', [...], false)
+ 3 APPPATH\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('D:\\Nesar Ahmed\\Work\\store-mid\\public\\index.php')
+ERROR - 2026-03-07 18:50:15 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#6 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#7 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#9 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#11 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#13 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#14 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#15 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#16 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#6 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#7 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#9 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#11 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#15 {main}
+ERROR - 2026-03-07 18:50:15 --> Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+ERROR - 2026-03-07 18:50:15 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#7 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#9 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#12 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#3 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#4 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#9 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#10 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#11 {main}
+CRITICAL - 2026-03-07 18:50:15 --> CodeIgniter\Database\Exceptions\DatabaseException: Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+[Method: GET, Route: api/shipments/TS-123]
+in SYSTEMPATH\Database\BaseConnection.php on line 465.
+ 1 SYSTEMPATH\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `shipments`
+WHERE `merchant_order_id` = :merchant_order_id:', [...], false)
+ 3 APPPATH\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('D:\\Nesar Ahmed\\Work\\store-mid\\public\\index.php')
+ERROR - 2026-03-07 18:50:56 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#6 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#7 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#9 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#11 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#13 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#14 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#15 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#16 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1565): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(1585): CodeIgniter\Database\BaseConnection->listTables()
+#4 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(821): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#5 D:\Nesar Ahmed\Work\store-mid\system\Database\MigrationRunner.php(173): CodeIgniter\Database\MigrationRunner->ensureTable()
+#6 D:\Nesar Ahmed\Work\store-mid\app\Filters\AutoMigrate.php(18): CodeIgniter\Database\MigrationRunner->latest()
+#7 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(241): App\Filters\AutoMigrate->before(Object(CodeIgniter\HTTP\IncomingRequest), NULL)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Filters\Filters.php(360): CodeIgniter\Filters\Filters->runBefore(Array)
+#9 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(373): CodeIgniter\Filters\Filters->runRequired('before')
+#10 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(333): CodeIgniter\CodeIgniter->runRequiredBeforeFilters(Object(CodeIgniter\Filters\Filters))
+#11 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#12 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#15 {main}
+ERROR - 2026-03-07 18:50:56 --> Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+ERROR - 2026-03-07 18:50:56 --> Error connecting to the database: mysqli_sql_exception: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php(201): mysqli->real_connect('localhost', '', Object(SensitiveParameterValue), '', 3306, '', 0)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#3 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#7 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#9 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#12 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user ''@'localhost' (using password: NO) in D:\Nesar Ahmed\Work\store-mid\system\Database\MySQLi\Connection.php:231
+Stack trace:
+#0 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+#2 D:\Nesar Ahmed\Work\store-mid\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#3 D:\Nesar Ahmed\Work\store-mid\app\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+#4 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+#5 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+#6 D:\Nesar Ahmed\Work\store-mid\system\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(417): CodeIgniter\CodeIgniter->run()
+#8 D:\Nesar Ahmed\Work\store-mid\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#9 D:\Nesar Ahmed\Work\store-mid\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#10 D:\Nesar Ahmed\Work\store-mid\system\rewrite.php(44): require_once('D:\\Nesar Ahmed\\...')
+#11 {main}
+CRITICAL - 2026-03-07 18:50:56 --> CodeIgniter\Database\Exceptions\DatabaseException: Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user ''@'localhost' (using password: NO)
+[Method: GET, Route: api/shipments/TS-123]
+in SYSTEMPATH\Database\BaseConnection.php on line 465.
+ 1 SYSTEMPATH\Database\BaseConnection.php(654): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `shipments`
+WHERE `merchant_order_id` = :merchant_order_id:', [...], false)
+ 3 APPPATH\Controllers\Shipments.php(16): CodeIgniter\Database\BaseBuilder->get()
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Shipments->getByOrder('TS-123')
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Shipments))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('D:\\Nesar Ahmed\\Work\\store-mid\\public\\index.php')
