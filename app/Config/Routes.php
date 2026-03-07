@@ -1,4 +1,8 @@
 <?php
+/*
+* directory: app/Config/Routes.php
+* description: Defines the routing rules for the application, mapping URLs to controller methods.
+*/
 
 use CodeIgniter\Router\RouteCollection;
 
@@ -15,5 +19,5 @@ $routes->group('api', function ($routes) {
     $routes->get('shipments', 'Shipments::list');
 
     $routes->get('shipments/(:segment)/events', 'Shipments::events/$1');
-    $routes->post('api/webhook/courier/(:segment)', 'CourierWebhook::receive/$1');
+    $routes->post('webhook/courier/(:segment)', 'CourierWebhook::receive/$1');
 });
