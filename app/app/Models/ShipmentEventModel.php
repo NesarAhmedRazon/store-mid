@@ -13,6 +13,8 @@ class ShipmentEventModel extends Model
         'provider_event',
         'normalized_status',
         'message',
-        'event_time'
+        'event_time',
+        'event_hash'
+
     ];
 }

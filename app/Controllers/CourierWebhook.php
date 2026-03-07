@@ -49,11 +49,14 @@ class CourierWebhook extends ResourceController
         $webhookSecret = $provider->webhook_secret ?? null;
         $authToken     = $provider->auth_token ?? null;
 
-        // Optional: verify Authorization header if set
-        $incomingToken = $this->request->getHeaderLine('Authorization');
-        if ($authToken && $incomingToken !== 'Bearer ' . $authToken) {
-            return $this->fail('Unauthorized', 401);
+        // MAndatory: verify header 'X-PATHAO-Signature' Secret provided by you during integration.check with provider's 'webhook_secret' for security. If not matched, reject the request.
+        $incomingSignature = $this->request->getHeaderLine('X-PATHAO-Signature');
+        if ($webhookSecret && $incomingSignature !== $webhookSecret) {
+            return $this->response->setStatusCode(401)
+                ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret)
+                ->setBody('Unauthorized');
         }
+
 
         // Idempotency check: skip if already exists
         $hash = md5(json_encode($data));
@@ -62,6 +65,7 @@ class CourierWebhook extends ResourceController
             return $this->response->setStatusCode(200)
                 ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret);
         }
+
 
         // Insert or update shipment
         $shipment = $shipmentModel->where('consignment_id', $data['consignment_id'])->first();
@@ -82,7 +86,7 @@ class CourierWebhook extends ResourceController
                 'updated_at' => $data['updated_at'] ?? date('Y-m-d H:i:s')
             ]);
         }
-
+        log_message('debug', $hash);
         // Insert event
         $eventModel->insert([
             'shipment_id'      => $shipmentId,
@@ -91,7 +95,7 @@ class CourierWebhook extends ResourceController
             'event_time'       => $data['updated_at'] ?? date('Y-m-d H:i:s'),
             'event_hash'       => $hash
         ]);
-
+        log_message('debug', 'the hash is: ' . $hash);
         // Respond with required Pathao header
         return $this->response->setStatusCode(200)
             ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret);

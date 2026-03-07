@@ -127,6 +127,11 @@ class CreateCourierTables extends Migration
                 'null' => true
             ],
             'event_time DATETIME NULL',
+            'event_hash' => [
+                'type' => 'VARCHAR',
+                'constraint' => 100,
+                'null' => true
+            ],
             'created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP'
         ]);
 
