@@ -1,3 +1,12 @@
 env
 .env
 *.env
+# Ignore everything in the writable directory
+writable/*
+
+# Except for these files (to keep folder structure)
+!writable/cache/index.html
+!writable/debugbar/index.html
+!writable/logs/index.html
+!writable/session/index.html
+!writable/uploads/index.html
