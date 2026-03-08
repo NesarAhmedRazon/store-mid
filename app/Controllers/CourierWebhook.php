@@ -19,6 +19,9 @@ class CourierWebhook extends ResourceController
      */
     public function receive($provider)
     {
+        // log incoming request for debugging
+            log_message('debug', 'Received webhook from ' . $provider. ': ' . $this->request->getBody());
+
         $data = $this->request->getJSON(true);
         if (!$data) {
             return $this->fail('Invalid JSON', 400);
@@ -51,9 +54,9 @@ class CourierWebhook extends ResourceController
 
         // MAndatory: verify header 'X-PATHAO-Signature' Secret provided by you during integration.check with provider's 'webhook_secret' for security. If not matched, reject the request.
         $incomingSignature = $this->request->getHeaderLine('X-PATHAO-Signature');
-        if ($webhookSecret && $incomingSignature !== $webhookSecret) {
+        log_message('debug', 'Incoming signature: ' . $incomingSignature);
+        if ($authToken && $incomingSignature !== $authToken) {
             return $this->response->setStatusCode(401)
-                ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret)
                 ->setBody('Unauthorized');
         }
 
@@ -86,7 +89,7 @@ class CourierWebhook extends ResourceController
                 'updated_at' => $data['updated_at'] ?? date('Y-m-d H:i:s')
             ]);
         }
-        log_message('debug', $hash);
+        
         // Insert event
         $eventModel->insert([
             'shipment_id'      => $shipmentId,
