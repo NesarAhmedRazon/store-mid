@@ -54,7 +54,7 @@ class CourierWebhook extends ResourceController
 
         // MAndatory: verify header 'X-PATHAO-Signature' Secret provided by you during integration.check with provider's 'webhook_secret' for security. If not matched, reject the request.
         $incomingSignature = $this->request->getHeaderLine('X-PATHAO-Signature');
-        log_message('debug', 'Incoming signature: ' . $incomingSignature);
+        //log_message('debug', 'Incoming signature: ' . $incomingSignature);
         if ($authToken && $incomingSignature !== $authToken) {
             return $this->response->setStatusCode(401)
                 ->setBody('Unauthorized');
@@ -72,20 +72,21 @@ class CourierWebhook extends ResourceController
 
         // Insert or update shipment
         $shipment = $shipmentModel->where('consignment_id', $data['consignment_id'])->first();
+        $eventStatus = trim('order.', $data['event']);  // Normalize status by removing 'order.' prefix
         if (!$shipment) {
             $shipmentId = $shipmentModel->insert([
                 'provider'           => 'pathao',
                 'consignment_id'     => $data['consignment_id'],
                 'merchant_order_id'  => $data['merchant_order_id'] ?? null,
                 'delivery_fee'       => $data['delivery_fee'] ?? null,
-                'current_status'     => $data['event'],
+                'current_status'     => $eventStatus,
                 'created_at'         => $data['updated_at'] ?? date('Y-m-d H:i:s'),
                 'updated_at'         => $data['updated_at'] ?? date('Y-m-d H:i:s')
             ]);
         } else {
             $shipmentId = $shipment['id'];
             $shipmentModel->update($shipmentId, [
-                'current_status' => $data['event'],
+                'current_status' => $eventStatus,
                 'updated_at' => $data['updated_at'] ?? date('Y-m-d H:i:s')
             ]);
         }
@@ -94,14 +95,15 @@ class CourierWebhook extends ResourceController
         $eventModel->insert([
             'shipment_id'      => $shipmentId,
             'provider_event'   => $data['event'],
-            'normalized_status' => $data['event'],
+            'normalized_status' => $eventStatus,
             'event_time'       => $data['updated_at'] ?? date('Y-m-d H:i:s'),
             'event_hash'       => $hash
         ]);
         log_message('debug', 'the hash is: ' . $hash);
         // Respond with required Pathao header
         return $this->response->setStatusCode(200)
-            ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret);
+            ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret)
+            ->setBody('Thank you, Pathao! Webhook received and processed: ' . $eventStatus);
     }
 
     /**
