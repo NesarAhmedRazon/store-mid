@@ -121,7 +121,7 @@ Stores raw webhook payloads.
 | id               | BIGINT  | Primary key                 |
 | provider         | VARCHAR | Courier provider             |
 | consignment_id   | VARCHAR | Optional                     |
-| merchant_reference| VARCHAR| Optional                     |
+| order_id         | VARCHAR | Optional                     |
 | payload          | JSON    | Raw webhook payload          |
 | headers          | JSON    | Raw request headers          |
 | received_at      | TIMESTAMP | Auto timestamp             |

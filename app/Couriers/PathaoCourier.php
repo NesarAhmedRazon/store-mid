@@ -61,7 +61,7 @@ class PathaoCourier
         $existingEvent = $this->eventModel->where('event_hash', $hash)->first();
         if ($existingEvent) {
             // Already processed
-            return $response->setStatusCode(200)
+            return $response->setStatusCode(202)
                 ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret)
                 ->setBody('Duplicate event ignored');
         }
@@ -109,7 +109,7 @@ class PathaoCourier
             return $response->setStatusCode(500)->setBody('Internal Server Error');
         }
 
-        return $response->setStatusCode(200)
+        return $response->setStatusCode(202)
             ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret)
             ->setBody('Webhook received and processed: ' . $eventStatus);
     }
