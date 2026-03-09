@@ -42,7 +42,7 @@ class PathaoCourier
             $db->table('courier_webhooks')->insert([
                 'provider' => 'pathao',
                 'consignment_id' => $data['consignment_id'] ?? null,
-                'merchant_reference' => $data['merchant_order_id'] ?? null,
+                'order_id' => $data['merchant_order_id'] ?? null,
                 'payload' => json_encode($data),
                 'headers' => json_encode($request->getHeaders()),
             ]);
@@ -78,7 +78,7 @@ class PathaoCourier
             $shipmentId = $this->shipmentModel->insert([
                 'provider' => 'pathao',
                 'consignment_id' => $data['consignment_id'] ?? null,
-                'merchant_order_id' => $data['merchant_order_id'] ?? null,
+                'order_id' => $data['merchant_order_id'] ?? null,
                 'delivery_fee' => $data['delivery_fee'] ?? null,
                 'current_status' => $eventStatus,
                 'created_at' => $data['updated_at'] ?? date('Y-m-d H:i:s'),

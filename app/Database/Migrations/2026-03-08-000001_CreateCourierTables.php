@@ -65,7 +65,7 @@ class CreateCourierTables extends Migration
                 'type' => 'VARCHAR',
                 'constraint' => 100
             ],
-            'merchant_order_id' => [
+            'order_id' => [
                 'type' => 'VARCHAR',
                 'constraint' => 100,
                 'null' => true
@@ -160,7 +160,7 @@ class CreateCourierTables extends Migration
                 'constraint' => 100,
                 'null' => true
             ],
-            'merchant_reference' => [
+            'order_id' => [
                 'type' => 'VARCHAR',
                 'constraint' => 100,
                 'null' => true

@@ -1,4 +1,8 @@
 <?php
+/*
+* directory: app/Controllers/Shipments.php
+* description: Provides an API endpoint to retrieve shipment details and timeline based on order_id. This is used by the frontend to display shipment status to customers.
+*/
 
 namespace App\Controllers;
 
@@ -12,7 +16,7 @@ class Shipments extends ResourceController
         $db = db_connect();
 
         $shipment = $db->table('shipments')
-            ->where('merchant_order_id', $orderId)
+            ->where('order_id', $orderId)
             ->get()
             ->getRow();
 

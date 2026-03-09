@@ -85,7 +85,7 @@ Stores shipments per courier consignment.
 | id               | BIGINT  | Primary key                     |
 | provider         | VARCHAR | Courier provider name           |
 | consignment_id   | VARCHAR | Courier consignment ID          |
-| merchant_order_id| VARCHAR | Normalized to `order_id`       |
+| order_id| VARCHAR | Normalized to `order_id`       |
 | invoice          | VARCHAR | Optional                        |
 | current_status   | VARCHAR | Normalized shipment status      |
 | cod_amount       | DECIMAL | Optional                        |
