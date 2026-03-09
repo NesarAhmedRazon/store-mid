@@ -35,10 +35,6 @@ class PathaoCourier
      */
     public function handle(array $data, string $authToken, string $webhookSecret, IncomingRequest $request, ResponseInterface $response): ResponseInterface
     {
-        return $response->setStatusCode(202)
-            ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret)
-            ->setBody('Webhook received and processed: ' . ($data['event'] ?? 'unknown event'));
-
         $db = db_connect();
 
         // Store raw webhook payload
@@ -113,7 +109,7 @@ class PathaoCourier
             return $response->setStatusCode(500)->setBody('Internal Server Error');
         }
 
-        return $response->setStatusCode(202)
+        return $response->setStatusCode(200)
             ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret)
             ->setBody('Webhook received and processed: ' . $eventStatus);
     }
