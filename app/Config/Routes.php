@@ -19,5 +19,5 @@ $routes->group('api', function ($routes) {
     $routes->get('shipments', 'Shipments::list');
 
     $routes->get('shipments/(:segment)/events', 'Shipments::events/$1');
-    $routes->get('courier/(:segment)', 'CourierWebhook::receive/$1');
+    $routes->post('courier/(:segment)', 'CourierWebhook::receive/$1');
 });
