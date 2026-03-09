@@ -1,61 +1,230 @@
-# CodeIgniter 4 Framework
+# Courier Webhook & Shipment Tracking Service
 
-## What is CodeIgniter?
+A lightweight **backend microservice** built with **CodeIgniter 4** to manage shipment tracking and courier integrations. The system handles webhook updates from multiple courier providers, normalizes shipment statuses, stores event history, and exposes REST APIs for querying shipment details.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+---
 
-This repository holds the distributable version of the framework.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## Table of Contents
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+- [Project Overview](#project-overview)
+- [Features](#features)
+- [Architecture & Tech Stack](#architecture--tech-stack)
+- [Database Structure](#database-structure)
+- [API Endpoints](#api-endpoints)
+- [Webhooks](#webhooks)
+- [Directory Structure](#directory-structure)
+- [Courier Logic (`app/Couriers`)](#courier-logic-appcouriers)
+- [Setup & Configuration](#setup--configuration)
+- [Future Enhancements](#future-enhancements)
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+---
 
-## Important Change with index.php
+## Project Overview
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+This microservice is designed to act as a **courier integration layer**. It:
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+- Receives webhook updates from courier providers (currently **Pathao** and **Steadfast**).
+- Stores shipment data and event history in a normalized structure.
+- Provides REST API endpoints for querying shipments by **merchant order ID** or **consignment ID**.
+- Normalizes courier-specific events into internal shipment statuses.
+- Supports easy addition of new courier providers.
 
-**Please** read the user guide for a better explanation of how CI4 works!
+---
 
-## Repository Management
+## Features
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+- **Webhook handling** with idempotency to prevent duplicate events.
+- **Shipment tracking APIs** with timeline/event history.
+- **Database transactions** for safe insert/update operations.
+- **Raw payload storage** for auditing and debugging.
+- **Courier abstraction layer** for provider-specific logic.
+- **Automatic migrations** via the `AutoMigrate` filter.
+- **Production-ready design**: logging, error handling, and header compliance.
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+---
 
-## Contributing
+## Architecture & Tech Stack
 
-We welcome contributions from the community.
+- **Framework**: CodeIgniter 4
+- **Language**: PHP 8+
+- **Database**: MySQL / MariaDB
+- **Architecture**: REST API microservice
 
-Please read the [*Contributing to CodeIgniter*](https://github.com/codeigniter4/CodeIgniter4/blob/develop/CONTRIBUTING.md) section in the development repository.
+**Key Principles**
 
-## Server Requirements
+- Controllers are thin; DB logic resides in models.
+- Provider-agnostic shipment statuses.
+- Idempotent webhook handling.
+- Extensible for new courier providers.
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+---
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+## Database Structure
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
+### `courier_providers`
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+Stores configuration for each courier.
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+```
+| Column         | Type        | Notes                       |
+|----------------|------------|-----------------------------|
+| id             | INT        | Primary key                 |
+| name           | VARCHAR    | Unique courier name         |
+| webhook_secret | VARCHAR    | Optional secret for webhooks|
+| auth_token     | VARCHAR    | API authentication token    |
+| created_at     | TIMESTAMP  | Auto timestamp              |
+```
+
+### `shipments`
+
+Stores shipments per courier consignment.
+
+```
+| Column            | Type     | Notes                          |
+|------------------|---------|--------------------------------|
+| id               | BIGINT  | Primary key                     |
+| provider         | VARCHAR | Courier provider name           |
+| consignment_id   | VARCHAR | Courier consignment ID          |
+| merchant_order_id| VARCHAR | Normalized to `order_id`       |
+| invoice          | VARCHAR | Optional                        |
+| current_status   | VARCHAR | Normalized shipment status      |
+| cod_amount       | DECIMAL | Optional                        |
+| delivery_fee     | DECIMAL | Optional                        |
+| created_at       | DATETIME| Timestamp                       |
+| updated_at       | DATETIME| Timestamp                       |
+```
+
+### `shipment_events`
+
+Stores timeline of shipment updates.
+
+```
+| Column           | Type     | Notes                         |
+|-----------------|---------|-------------------------------|
+| id              | BIGINT  | Primary key                   |
+| shipment_id     | BIGINT  | Foreign key to `shipments`   |
+| provider_event  | VARCHAR | Original courier event        |
+| normalized_status | VARCHAR | Internal normalized status  |
+| message         | TEXT    | Optional event message        |
+| event_time      | DATETIME| Event timestamp               |
+| event_hash      | VARCHAR | MD5 hash for idempotency      |
+| created_at      | TIMESTAMP | Auto timestamp               |
+```
+
+### `courier_webhooks`
+
+Stores raw webhook payloads.
+
+```
+| Column            | Type     | Notes                       |
+|------------------|---------|-----------------------------|
+| id               | BIGINT  | Primary key                 |
+| provider         | VARCHAR | Courier provider             |
+| consignment_id   | VARCHAR | Optional                     |
+| merchant_reference| VARCHAR| Optional                     |
+| payload          | JSON    | Raw webhook payload          |
+| headers          | JSON    | Raw request headers          |
+| received_at      | TIMESTAMP | Auto timestamp             |
+```
+
+---
+
+## API Endpoints
+
+### Shipments
+
+```
+| Method | Endpoint                            | Description                                  |
+|--------|------------------------------------|----------------------------------------------|
+| GET    | `/api/shipments/{order_id}`         | Retrieve shipment by merchant order ID      |
+| GET    | `/api/shipments/consignment/{id}`  | Retrieve shipment by consignment ID         |
+| GET    | `/api/shipments`                    | List all shipments                           |
+| GET    | `/api/shipments/{order_id}/events` | Timeline of shipment events                  |
+```
+
+### Webhook
+
+```
+| Method | Endpoint                       | Notes                                     |
+|--------|--------------------------------|-------------------------------------------|
+| POST   | `/api/courier/{provider}`      | Receives courier webhook (`pathao`, `steadfast`) |
+```
+
+---
+
+## Webhooks
+
+- **Pathao**: Requires `X-Pathao-Merchant-Webhook-Integration-Secret` header in the response.
+- **Steadfast**: Uses `Authorization: Bearer {auth_token}` header for verification.
+- Idempotency is ensured via `event_hash` (MD5 of the payload).
+- Raw webhook payloads are stored in `courier_webhooks` for auditing/debugging.
+
+---
+
+## Directory Structure
+
+```text
+app/
+├── Config/
+│   └── Routes.php
+├── Controllers/
+│   ├── Shipments.php
+│   └── CourierWebhook.php
+├── Models/
+│   ├── ShipmentModel.php
+│   └── ShipmentEventModel.php
+├── Couriers/
+│   ├── PathaoCourier.php
+│   └── SteadfastCourier.php
+└── Filters/
+    └── AutoMigrate.php
+```
+
+## Courier Logic (`app/Couriers`)
+
+All courier-specific logic is **moved to individual classes**:
+
+- **PathaoCourier.php**: Handles Pathao webhook processing, idempotency, shipment insert/update, event insert, and returns required headers.
+- **SteadfastCourier.php**: Handles Steadfast webhook in a similar manner.
+- Each courier class is **independent of CI controller**, but **request/response objects are injected**.
+
+This abstraction ensures:
+
+- Easy addition of new couriers.
+- Unit-testable courier logic.
+- Controller remains thin.
+
+---
+
+## Setup & Configuration
+
+1. Clone the repository and install dependencies.
+2. Configure `.env` for database and environment variables.
+3. Run the database migrations:
+
+```bash
+php spark migrate
+```
+
+4. Optional: enable AutoMigrate filter to auto-run migrations.
+
+5. Configure couriers in courier_providers table (auth_token, webhook_secret).
+
+6. Set webhook URLs in courier dashboards to /api/courier/{provider}.
+
+## Future Enhancements
+
+- Courier status normalization mapping table.
+
+- Retry queue for failed webhook processing.
+
+- Rate limiting and signature verification for webhooks.
+
+- Admin interface for shipments and events.
+
+- Multi-tenant support for multiple merchants.
+
+- Monitoring and error tracking.
+
+**Author:** SMD Electronics.
+**Date:** 2026-03-09
