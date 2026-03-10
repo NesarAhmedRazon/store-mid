@@ -9,7 +9,7 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Home::index');
+// $routes->get('/', 'Home::index');
 $routes->group('api', function ($routes) {
 
     $routes->get('shipments/(:segment)', 'Shipments::getByOrder/$1');
@@ -20,4 +20,16 @@ $routes->group('api', function ($routes) {
 
     $routes->get('shipments/(:segment)/events', 'Shipments::events/$1');
     $routes->post('courier/(:segment)', 'CourierWebhook::receive/$1');
+});
+
+$routes->get('/', 'Auth::login');
+
+$routes->post('/login', 'Auth::attempt');
+
+$routes->get('/logout', 'Auth::logout');
+
+$routes->group('', ['filter'=>'auth'], function($routes){
+
+    $routes->get('/dashboard','Dashboard::index');
+
 });

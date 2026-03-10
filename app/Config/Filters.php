@@ -35,6 +35,7 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'automigrate' => \App\Filters\AutoMigrate::class,
+        'auth' => \App\Filters\AuthFilter::class,
     ];
 
     /**
