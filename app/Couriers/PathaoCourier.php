@@ -11,6 +11,8 @@ use App\Models\ShipmentEventModel;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Database\Exceptions\DatabaseException;
+use App\Libraries\ExternalWebhook;
+
 
 class PathaoCourier
 {
@@ -36,7 +38,7 @@ class PathaoCourier
     public function handle(array $data, string $authToken, string $webhookSecret, IncomingRequest $request, ResponseInterface $response): ResponseInterface
     {
         $db = db_connect();
-
+        $env = env('CI_ENVIRONMENT', 'production');
         // Store raw webhook payload
         try {
             $db->table('courier_webhooks')->insert([
@@ -58,14 +60,16 @@ class PathaoCourier
 
         // Idempotency check
         $hash = md5(json_encode($data));
-        $existingEvent = $this->eventModel->where('event_hash', $hash)->first();
-        if ($existingEvent) {
-            // Already processed
-            return $response->setStatusCode(202)
-                ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret)
-                ->setBody('Duplicate event ignored');
-        }
 
+        if($env === 'production') {         
+            $existingEvent = $this->eventModel->where('event_hash', $hash)->first();
+            if ($existingEvent) {
+                // Already processed
+                return $response->setStatusCode(202)
+                    ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret)
+                    ->setBody('Duplicate event ignored');
+            }
+        }
         $eventStatus = str_replace('order.', '', $data['event'] ?? 'tracking_update');
 
         // DB transaction for shipment + event
@@ -108,6 +112,11 @@ class PathaoCourier
             log_message('error', 'Pathao webhook transaction failed for consignment_id: ' . ($data['consignment_id'] ?? 'unknown'));
             return $response->setStatusCode(500)->setBody('Internal Server Error');
         }
+
+        // --- Forward payload to external API ---
+        $webhook = new ExternalWebhook();
+        $webhook->send($data); // signature taken automatically from .env
+
 
         return $response->setStatusCode(200)
             ->setHeader('X-Pathao-Merchant-Webhook-Integration-Secret', $webhookSecret)
