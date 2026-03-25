@@ -5,3 +5,4 @@ env
 writable/*/*.json
 writable/*/*.log
 writable/*/*.txt
+writable/session/ci_s*
