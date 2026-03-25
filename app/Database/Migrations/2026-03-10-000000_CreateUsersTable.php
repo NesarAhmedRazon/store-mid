@@ -10,33 +10,36 @@ class CreateUsersTable extends Migration
     {
         $this->forge->addField([
             'id' => [
-                'type' => 'INT',
-                'auto_increment' => true
+                'type'           => 'INT',
+                'auto_increment' => true,
             ],
             'name' => [
-                'type' => 'VARCHAR',
-                'constraint' => 120
+                'type'       => 'VARCHAR',
+                'constraint' => 120,
             ],
             'email' => [
-                'type' => 'VARCHAR',
+                'type'       => 'VARCHAR',
                 'constraint' => 150,
-                'unique' => true
+                'unique'     => true,
             ],
             'password' => [
-                'type' => 'VARCHAR',
-                'constraint' => 255
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
             ],
             'role' => [
-                'type' => 'ENUM',
-                'constraint' => ['admin','staff','viewer'],
-                'default' => 'admin'
+                'type'       => 'ENUM',
+                // FIX: default changed from 'admin' to 'viewer'.
+                // New accounts should have the least privilege until
+                // explicitly promoted by an administrator.
+                'constraint' => ['admin', 'staff', 'viewer'],
+                'default'    => 'viewer',
             ],
             'status' => [
-                'type' => 'BOOLEAN',
-                'default' => 1
+                'type'    => 'BOOLEAN',
+                'default' => 1,
             ],
             'created_at DATETIME DEFAULT CURRENT_TIMESTAMP',
-            'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'
+            'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
         ]);
 
         $this->forge->addKey('id', true);
