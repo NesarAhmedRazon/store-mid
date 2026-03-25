@@ -53,6 +53,17 @@ class CreateProductsTable extends Migration
                 'constraint' => '10,2',
                 'default'    => '0.00',
             ],
+            'wc_created_at' => [
+                'type'    => 'DATETIME',
+                'null'    => true,
+                'default' => null,
+                'after'   => 'regular_price',
+            ],
+            'thumb_id' => [
+                'type'     => 'INT',
+                'null'     => true,
+                'default'  => null,
+            ],
             'created_at DATETIME DEFAULT CURRENT_TIMESTAMP',
             'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
         ]);

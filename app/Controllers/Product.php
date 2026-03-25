@@ -6,15 +6,16 @@ namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
 use App\Models\ProductModel;
+use CodeIgniter\I18n\Time;
 
 class Product extends ResourceController
 {
     public function receive()
         {
-            log_message('debug', '=== Webhook Received ===');
+            // log_message('debug', '=== Webhook Received ===');
             $secret = $this->request->getHeaderLine('X-WC-Webhook-Secret');
-            log_message('debug', 'Received secret: ' . $secret);
-            log_message('debug', 'Expected secret: ' . env('WC_WEBHOOK_SECRET'));
+            // log_message('debug', 'Received secret: ' . $secret);
+            // log_message('debug', 'Expected secret: ' . env('WC_WEBHOOK_SECRET'));
 
             if ($secret !== env('WC_WEBHOOK_SECRET')) {
                 log_message('error', 'Invalid webhook secret provided');
@@ -22,7 +23,7 @@ class Product extends ResourceController
             }
 
             $data = $this->request->getJSON(true);
-            log_message('debug', 'Raw input: ' . json_encode($data));
+            // log_message('debug', 'Raw input: ' . json_encode($data));
 
             if (!$data || empty($data['wc_id']) || empty($data['title']) || empty($data['permalink'])) {
                 log_message('error', 'Invalid or empty JSON payload');
@@ -40,8 +41,9 @@ class Product extends ResourceController
                 'stock_status'   => $data['stock_status'] ?? 'outofstock',
                 'sale_price'     => $data['sale_price'] ?? null,
                 'regular_price'  => $data['regular_price'] ?? 0,
+                'wc_created_at'  => $data['created_at'] ?? Time::now()->toDateTimeString(),
             ];
-            log_message('debug', 'Prepared data: ' . json_encode($insert));
+            // log_message('debug', 'Prepared data: ' . json_encode($insert));
             
             $existing = $model->where('wc_id', $data['wc_id'])->first();
 

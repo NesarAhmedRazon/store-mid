@@ -24,7 +24,9 @@ class ProductModel extends Model
         'stock_quantity',
         'stock_status',
         'sale_price',
-        'regular_price'
+        'regular_price',
+        'wc_created_at',
+        'thumb_id'
     ];
 
     protected $useTimestamps = true;
