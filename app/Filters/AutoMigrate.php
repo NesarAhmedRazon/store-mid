@@ -16,17 +16,17 @@ class AutoMigrate implements FilterInterface
     
 public function before(RequestInterface $request, $arguments = null)
 {
-    if (ENVIRONMENT !== 'development') {
-        // Prevent auto-migrations in production
-        return;
-    }
+    $migrateFlag = filter_var(env('MIGRATE', false), FILTER_VALIDATE_BOOLEAN);
 
-    $migrate = Services::migrations();
+    if (ENVIRONMENT === 'development' || $migrateFlag) {
 
-    try {
-        $migrate->latest();
-    } catch (\Throwable $e) {
-        log_message('error', $e->getMessage());
+        $migrate = Services::migrations();
+
+        try {
+            $migrate->latest();
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+        }
     }
 }
 
