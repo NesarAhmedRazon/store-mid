@@ -26,7 +26,7 @@
             <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none"><path d="M14 3H2v2h12V3zM14 7H2v2h12V7zM8 11H2v2h6v-2z" fill="currentColor" opacity=".6"/></svg>
             Hooks
         </a>
-        <a href="#" class="nav-item">
+        <a href="/products" class="nav-item">
             <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="1.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><path d="M9.5 12h5M12 9.5v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
             Products
         </a>

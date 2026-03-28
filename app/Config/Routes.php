@@ -40,6 +40,12 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     // All authenticated users
     $routes->get('/dashboard', 'Dashboard::index');
 
+    // Products
+    $routes->group('products', ['filter' => 'auth'], function($routes) {
+        $routes->get('/', 'Products::index');
+        $routes->get('preview', 'Products::preview');
+    });
+    
     // Admin + Staff
     $routes->group('', ['filter' => 'role:admin,staff'], function($routes) {
         $routes->get('/reports', 'Reports::index');
@@ -51,5 +57,10 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
         $routes->post('/users/create', 'Admin\Users::create');
         $routes->post('/users/(:num)/role', 'Admin\Users::updateRole/$1');
     });
+
+    // Product
+    // $routes->group('/product',function($routes){
+
+    // });
 
 });

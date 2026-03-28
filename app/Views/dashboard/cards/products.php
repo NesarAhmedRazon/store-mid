@@ -26,7 +26,9 @@
                 <tr class="hover:bg-bg transition-colors border-b border-border last:border-0">
                     <td class="px-4 py-2.5 font-mono text-[11px] text-subtle whitespace-nowrap">#<?= $p->id ?></td>
                     <td class="px-4 py-2.5 font-mono text-[12px] text-muted whitespace-nowrap"><?= $p->sku ?></td>
-                    <td class="px-4 py-2.5 text-[12px] font-medium text-text"><?= $p->title ?></td>
+                    <td class="px-4 py-2.5 text-[12px] font-medium text-text">
+                        <a href="/products/preview?id=<?= $p->id ?>" class="hover:text-info transition-colors no-underline"><?= esc($p->title) ?></a>
+                    </td>
                     <td class="px-4 py-2.5 font-mono text-[12px] text-text text-right whitespace-nowrap"><?= number_format($p->stock_quantity) ?></td>
                     <td class="px-4 py-2.5 whitespace-nowrap"><span class="badge badge-<?= $statusBadge[$p->stock_status] ?>"><?= $p->stock_status ?></span></td>
                     <td class="px-4 py-2.5 font-mono text-[12px] text-right whitespace-nowrap">

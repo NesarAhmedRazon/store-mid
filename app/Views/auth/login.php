@@ -242,7 +242,14 @@
                 </svg>
                 <?= esc(session()->getFlashdata('error')) ?>
             </div>
-            <?php endif; ?>
+            <?php endif; 
+
+                $val = set_value('email');
+                if (ENVIRONMENT === 'development'):
+                    $val = env('ADMIN_EMAIL','');
+                endif;
+                  
+            ?>
 
             <?= form_open('/login') ?>
 
@@ -252,7 +259,7 @@
                         type="email"
                         id="email"
                         name="email"
-                        value="<?= set_value('email') ?>"
+                        value="<?= $val ?>"
                         placeholder="you@example.com"
                         autocomplete="email"
                         required
