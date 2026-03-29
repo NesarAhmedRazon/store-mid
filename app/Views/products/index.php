@@ -29,6 +29,7 @@
                 <th class="text-[10px] uppercase tracking-widest text-subtle font-medium text-left px-4 py-2.5 border-b border-border whitespace-nowrap">Status</th>
                 <th class="text-[10px] uppercase tracking-widest text-subtle font-medium text-right px-4 py-2.5 border-b border-border whitespace-nowrap">Sale price</th>
                 <th class="text-[10px] uppercase tracking-widest text-subtle font-medium text-right px-4 py-2.5 border-b border-border whitespace-nowrap">Regular price</th>
+                <th class="text-[10px] uppercase tracking-widest text-subtle font-medium text-right px-4 py-2.5 border-b border-border whitespace-nowrap">Cost</th>
                 <th class="text-[10px] uppercase tracking-widest text-subtle font-medium text-left px-4 py-2.5 border-b border-border whitespace-nowrap">WC created</th>
                 <th class="text-[10px] uppercase tracking-widest text-subtle font-medium text-left px-4 py-2.5 border-b border-border whitespace-nowrap">Last synced</th>
                 <th class="text-[10px] uppercase tracking-widest text-subtle font-medium text-left px-4 py-2.5 border-b border-border whitespace-nowrap"></th>
@@ -75,6 +76,9 @@
                 </td>
                 <td class="px-4 py-2.5 font-mono text-[12px] text-text text-right whitespace-nowrap">
                     ৳<?= number_format($p->regular_price, 2) ?>
+                </td>
+                <td class="px-4 py-2.5 font-mono text-[12px] text-text text-right whitespace-nowrap">
+                    ৳<?= number_format($p->cost, 10) ?>
                 </td>
                 <td class="px-4 py-2.5 font-mono text-[11px] text-subtle whitespace-nowrap">
                     <?= $p->wc_created_at ? date('d M Y', strtotime($p->wc_created_at)) : '<span class="text-subtle">—</span>' ?>

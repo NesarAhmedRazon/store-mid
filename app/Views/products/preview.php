@@ -40,7 +40,9 @@ $dummy_tags = [
     'crystal', 'oscillator', '40mhz', 'smd', 'passive', 'timing', 'hcmos', 'ttl',
 ];
 
-$dummy_cost = 85.00;
+
+
+$cost = $product->cost;
 
 $statusBadge = [
     'instock'     => 'up',
@@ -162,17 +164,20 @@ $statusBadge = [
                 </div>
                 <div>
                     <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Cost of goods</div>
+                    <?php if ($cost !== null): ?>
                     <div class="font-mono text-[22px] font-light text-muted">
-                        ৳<?= number_format($dummy_cost, 2) ?>
+                        ৳ <?= format_decimal($cost) ?>
                     </div>
-                    <span class="placeholder-note mt-2 inline-flex">not implemented</span>
+                    <?php else: ?>
+                    <div class="font-mono text-[22px] font-light text-subtle">—</div>
+                    <?php endif; ?>
                 </div>
             </div>
 
             <?php
             $activePriceForMargin = $product->sale_price ?? $product->regular_price;
-            $margin    = $activePriceForMargin - $dummy_cost;
-            $marginPct = $dummy_cost > 0 ? ($margin / $dummy_cost) * 100 : 0;
+            $margin    = $activePriceForMargin - $cost;
+            $marginPct = $cost > 0 ? ($margin / $cost) * 100 : 0;
             ?>
             <div class="px-5 pb-5 pt-0 flex items-center gap-4 border-t border-border mt-0">
                 <div class="text-[11px] text-subtle mt-4">

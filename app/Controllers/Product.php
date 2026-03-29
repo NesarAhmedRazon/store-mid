@@ -42,6 +42,7 @@ class Product extends ResourceController
                 'sale_price'     => $data['sale_price'] ?? null,
                 'regular_price'  => $data['regular_price'] ?? 0,
                 'wc_created_at'  => $data['created_at'] ?? Time::now()->toDateTimeString(),
+                'cost'           => $data['wc_cog'] ?? 0,
             ];
             // log_message('debug', 'Prepared data: ' . json_encode($insert));
             

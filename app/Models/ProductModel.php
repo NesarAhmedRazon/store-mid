@@ -26,7 +26,8 @@ class ProductModel extends Model
         'sale_price',
         'regular_price',
         'wc_created_at',
-        'thumb_id'
+        'thumb_id',
+        'cost',
     ];
 
     protected $useTimestamps = true;

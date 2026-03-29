@@ -53,6 +53,12 @@ class CreateProductsTable extends Migration
                 'constraint' => '10,2',
                 'default'    => '0.00',
             ],
+            'cost' => [
+                'type'       => 'DECIMAL',
+                'constraint' => '20,6',
+                'null'       => true,
+                'default'    => null,
+            ],
             'wc_created_at' => [
                 'type'    => 'DATETIME',
                 'null'    => true,
