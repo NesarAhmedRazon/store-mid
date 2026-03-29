@@ -78,7 +78,7 @@
                     ৳ <?= number_format($p->regular_price, 2) ?>
                 </td>
                 <td class="px-4 py-2.5 font-mono text-[12px] text-text text-right whitespace-nowrap">                    
-                    <?= $cost !== null ? '৳ ' . format_decimal($cost) : '—' ?>
+                    <?= $p->cost !== null ? '৳ ' . format_decimal($p->cost) : '—' ?>
                 </td>
                 <td class="px-4 py-2.5 font-mono text-[11px] text-subtle whitespace-nowrap">
                     <?= $p->wc_created_at ? date('d M Y', strtotime($p->wc_created_at)) : '<span class="text-subtle">—</span>' ?>
