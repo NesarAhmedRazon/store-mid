@@ -14,9 +14,9 @@ class CreateProductsTable extends Migration
                 'auto_increment' => true,
             ],
             'wc_id' => [
-                'type'     => 'INT',
-                'unique'   => true,
-                'comment'  => 'WooCommerce product ID',
+                'type'    => 'INT',
+                'unique'  => true,
+                'comment' => 'WooCommerce product ID',
             ],
             'permalink' => [
                 'type'       => 'VARCHAR',
@@ -33,9 +33,9 @@ class CreateProductsTable extends Migration
                 'default'    => null,
             ],
             'stock_quantity' => [
-                'type'     => 'INT',
-                'null'     => true,
-                'default'  => null,
+                'type'    => 'INT',
+                'null'    => true,
+                'default' => null,
             ],
             'stock_status' => [
                 'type'       => 'ENUM',
@@ -66,9 +66,9 @@ class CreateProductsTable extends Migration
                 'after'   => 'regular_price',
             ],
             'thumb_id' => [
-                'type'     => 'INT',
-                'null'     => true,
-                'default'  => null,
+                'type'    => 'INT',
+                'null'    => true,
+                'default' => null,
             ],
             'created_at DATETIME DEFAULT CURRENT_TIMESTAMP',
             'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
@@ -76,11 +76,14 @@ class CreateProductsTable extends Migration
 
         $this->forge->addKey('id', true);
         $this->forge->addKey('sku');
-        $this->forge->createTable('products');
+
+        $this->forge->createTable('products', true, [
+            'ENGINE' => 'InnoDB',
+        ]);
     }
 
     public function down()
     {
-        $this->forge->dropTable('products');
+        $this->forge->dropTable('products', true);
     }
 }
