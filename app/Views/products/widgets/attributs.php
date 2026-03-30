@@ -1,6 +1,6 @@
  <?php
 $attributes   = $data ?? [];
-log_message('debug',print_r($attributes));
+
 ?>
 
         <div class="card">
