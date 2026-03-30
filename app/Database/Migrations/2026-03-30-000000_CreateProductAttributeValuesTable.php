@@ -10,17 +10,17 @@ class CreateProductAttributeValuesTable extends Migration
     {
         $this->forge->addField([
             'id' => [
-                'type' => 'SMALLINT',
+                'type' => 'INT',
                 'unsigned' => true,
                 'auto_increment' => true,
             ],
             'wc_id' => [
-                'type' => 'SMALLINT',
+                'type' => 'INT',
                 'unsigned' => true,
                 'unique' => true,
             ],
             'attribute_id' => [
-                'type' => 'SMALLINT',
+                'type' => 'INT',
                 'unsigned' => true,
             ],
             'slug' => [
@@ -32,7 +32,7 @@ class CreateProductAttributeValuesTable extends Migration
                 'constraint' => 120,
             ],
             'sort_order' => [
-                'type' => 'SMALLINT',
+                'type' => 'INT',
                 'unsigned' => true,
                 'default' => 0,
             ],
