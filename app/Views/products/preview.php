@@ -40,10 +40,14 @@ $dummy_tags = [
     'crystal', 'oscillator', '40mhz', 'smd', 'passive', 'timing', 'hcmos', 'ttl',
 ];
 
-$attributes = $product->attributes;
-$cost = $product->cost;
 
-log_message('debug',print_r($attributes));
+$pricing = [
+    'regular_price' => $product->regular_price,
+    'sale_price' => $product->sale_price,
+    'cost' => $product->cost,
+];
+
+
 
 $statusBadge = [
     'instock'     => 'up',
@@ -122,73 +126,10 @@ $statusBadge = [
         </div>
 
         <!-- Attributes -->
-        <div class="card">
-            <div class="card-head">
-                <span class="card-title">Attributes</span>
-                <span class="placeholder-note">not implemented</span>
-            </div>
-            <table class="w-full border-collapse">
-                <?php foreach ($attributes as $attr): ?>
-                <tr class="border-b border-border last:border-0 hover:bg-bg transition-colors">
-                    <td class="px-4 py-2.5 text-[10px] uppercase tracking-widest text-subtle font-medium w-44 whitespace-nowrap">
-                        <?= esc($attr['name']) ?>
-                    </td>
-                    <td class="px-4 py-2.5 font-mono text-[12px] text-text">
-                        <?= esc($attr['value']) ?>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-        </div>
+        <?= view('products/widgets/attributs', ['data' => $product->attributes ?? []],['saveData' => false]) ?> 
 
         <!-- Pricing -->
-        <div class="card">
-            <div class="card-head">
-                <span class="card-title">Pricing</span>
-            </div>
-            <div class="p-5 grid grid-cols-3 gap-6">
-                <div>
-                    <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Regular price</div>
-                    <div class="font-mono text-[22px] font-light text-text">
-                        ৳<?= number_format($product->regular_price, 2) ?>
-                    </div>
-                </div>
-                <div>
-                    <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Sale price</div>
-                    <?php if ($product->sale_price !== null): ?>
-                    <div class="font-mono text-[22px] font-light text-up">
-                        ৳<?= number_format($product->sale_price, 2) ?>
-                    </div>
-                    <?php else: ?>
-                    <div class="font-mono text-[22px] font-light text-subtle">—</div>
-                    <?php endif; ?>
-                </div>
-                <div>
-                    <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Cost of goods</div>
-                    <?php if ($cost !== null): ?>
-                    <div class="font-mono text-[22px] font-light text-muted">
-                        ৳ <?= format_decimal($cost) ?>
-                    </div>
-                    <?php else: ?>
-                    <div class="font-mono text-[22px] font-light text-subtle">—</div>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <?php
-            $activePriceForMargin = $product->sale_price ?? $product->regular_price;
-            $margin    = $activePriceForMargin - $cost;
-            $marginPct = $cost > 0 ? ($margin / $cost) * 100 : 0;
-            ?>
-            <div class="px-5 pb-5 pt-0 flex items-center gap-4 border-t border-border mt-0">
-                <div class="text-[11px] text-subtle mt-4">
-                    Margin on <?= $product->sale_price !== null ? 'sale' : 'regular' ?> price:
-                    <span class="font-mono font-medium <?= $margin >= 0 ? 'text-up' : 'text-down' ?>">
-                        ৳<?= number_format($margin, 2) ?> (<?= number_format($marginPct, 1) ?>%)
-                    </span>
-                </div>
-            </div>
-        </div>
+        <?= view('products/widgets/pricing', ['data' => $pricing ?? []],['saveData' => false]) ?> 
 
     </div>
 
