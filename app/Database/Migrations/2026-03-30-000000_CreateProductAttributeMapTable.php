@@ -22,16 +22,16 @@ class CreateProductAttributeMapTable extends Migration
             ],
 
             'attribute_id' => [
-                'type' => 'SMALLINT',
+                'type' => 'INT',
                 'unsigned' => true,
             ],
 
             'value_id' => [
-                'type' => 'SMALLINT',
+                'type' => 'INT',
                 'unsigned' => true,
             ],
             'order' => [
-                'type' => 'SMALLINT',
+                'type' => 'INT',
                 'unsigned' => true,
                 'null'     => true,
                 'default'  => null,
@@ -75,9 +75,7 @@ class CreateProductAttributeMapTable extends Migration
             'CASCADE'
         );
 
-        $this->forge->createTable('product_attribute_map', true, [
-            'ENGINE' => 'InnoDB'
-        ]);
+        $this->forge->createTable('product_attribute_map');
     }
 
     public function down()
