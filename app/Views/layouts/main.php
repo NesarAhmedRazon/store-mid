@@ -5,9 +5,9 @@
 
 <div class="flex min-h-screen">
     <?= $this->include('partials/sidebar') ?>
-    <div class="ml-[220px] flex-1 flex flex-col">
+    <div class="flex-1 flex flex-col lg:ml-[220px] mt-[54px] lg:mt-0">
         <?= $this->include('partials/topbar') ?>
-        <div class="p-7">
+        <div class="p-4 lg:p-7">
             <?= $this->renderSection('content') ?>
         </div>
     </div>

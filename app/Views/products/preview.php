@@ -40,9 +40,10 @@ $dummy_tags = [
     'crystal', 'oscillator', '40mhz', 'smd', 'passive', 'timing', 'hcmos', 'ttl',
 ];
 
-
-
+$attributes = $product->attributes;
 $cost = $product->cost;
+
+log_message('debug',print_r($attributes));
 
 $statusBadge = [
     'instock'     => 'up',
@@ -127,7 +128,7 @@ $statusBadge = [
                 <span class="placeholder-note">not implemented</span>
             </div>
             <table class="w-full border-collapse">
-                <?php foreach ($dummy_attributes as $attr): ?>
+                <?php foreach ($attributes as $attr): ?>
                 <tr class="border-b border-border last:border-0 hover:bg-bg transition-colors">
                     <td class="px-4 py-2.5 text-[10px] uppercase tracking-widest text-subtle font-medium w-44 whitespace-nowrap">
                         <?= esc($attr['name']) ?>

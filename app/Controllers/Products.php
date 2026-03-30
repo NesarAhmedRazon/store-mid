@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\ProductModel;
+use App\Libraries\AttributeService;
 
 class Products extends BaseController
 {
@@ -40,7 +41,9 @@ class Products extends BaseController
         }
 
         $product = $this->model->find($id);
-
+        $attr = new AttributeService();
+        $product->attributes = $attr->getByProductId($product->id);
+        
         if (!$product) {
             return redirect()->to('/products')->with('error', 'Product not found.');
         }

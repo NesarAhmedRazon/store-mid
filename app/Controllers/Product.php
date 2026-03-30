@@ -1,6 +1,7 @@
 <?php
 // app/Controllers/Product.php
-// This controller handles incoming POST requests from WooCommerce to create or update product records in the local database. It expects a JSON payload with product details and saves them using the ProductModel.
+// Handles incoming POST requests from WooCommerce.
+// Upserts product, attributes, values, and pivot map in a single transaction.
 
 namespace App\Controllers;
 
@@ -11,28 +12,31 @@ use CodeIgniter\I18n\Time;
 class Product extends ResourceController
 {
     public function receive()
-        {
-            // log_message('debug', '=== Webhook Received ===');
-            $secret = $this->request->getHeaderLine('X-WC-Webhook-Secret');
-            // log_message('debug', 'Received secret: ' . $secret);
-            // log_message('debug', 'Expected secret: ' . env('WC_WEBHOOK_SECRET'));
+    {
+        // ── Auth ────────────────────────────────────────────────────────
+        $secret = $this->request->getHeaderLine('X-WC-Webhook-Secret');
 
-            if ($secret !== env('WC_WEBHOOK_SECRET')) {
-                log_message('error', 'Invalid webhook secret provided');
-                return $this->failUnauthorized('Invalid webhook secret');
-            }
+        if ($secret !== env('WC_WEBHOOK_SECRET')) {
+            log_message('error', 'Invalid webhook secret provided');
+            return $this->failUnauthorized('Invalid webhook secret');
+        }
 
-            $data = $this->request->getJSON(true);
-            // log_message('debug', 'Raw input: ' . json_encode($data));
+        // ── Parse payload ───────────────────────────────────────────────
+        $data = $this->request->getJSON(true);
 
-            if (!$data || empty($data['wc_id']) || empty($data['title']) || empty($data['permalink'])) {
-                log_message('error', 'Invalid or empty JSON payload');
-                return $this->fail('Missing required fields', 422);
-            }
+        if (!$data || empty($data['wc_id']) || empty($data['title']) || empty($data['permalink'])) {
+            log_message('error', 'Invalid or empty JSON payload');
+            return $this->fail('Missing required fields', 422);
+        }
 
-            $model = new ProductModel();
+        $db    = \Config\Database::connect();
+        $model = new ProductModel();
 
-            $insert = [
+        try {
+            $db->transStart();
+
+            // ── Upsert product ───────────────────────────────────────────
+            $productData = [
                 'wc_id'          => $data['wc_id'],
                 'permalink'      => $data['permalink'],
                 'title'          => $data['title'],
@@ -44,19 +48,110 @@ class Product extends ResourceController
                 'wc_created_at'  => $data['created_at'] ?? Time::now()->toDateTimeString(),
                 'cost'           => $data['wc_cog'] ?? 0,
             ];
-            // log_message('debug', 'Prepared data: ' . json_encode($insert));
-            
+
             $existing = $model->where('wc_id', $data['wc_id'])->first();
 
             if ($existing) {
-                $model->update($existing->id, $insert);
+                $model->update($existing->id, $productData);
+                $productId = $existing->id;
             } else {
-                $model->insert($insert);
+                $productId = $model->insert($productData, true);
             }
 
-            return $this->respond([
-                'status' => 'ok',
-                'wc_id'  => $data['wc_id'],
-            ]);
+            // ── Upsert attributes ────────────────────────────────────────
+            if (!empty($data['attributes']) && is_array($data['attributes'])) {
+
+                // Clear existing pivot rows — will be re-linked fresh below
+                $db->table('product_attribute_map')
+                   ->where('product_id', $productId)
+                   ->delete();
+
+                foreach ($data['attributes'] as $attr) {
+
+                    if (empty($attr['wc_id']) || empty($attr['name']) || empty($attr['values'])) {
+                        continue;
+                    }
+
+                    // ── Upsert attribute row ─────────────────────────────
+                    $attrRow = $db->table('product_attributes')
+                                  ->where('wc_id', (int) $attr['wc_id'])
+                                  ->get()->getRowArray();
+
+                    if ($attrRow) {
+                        $db->table('product_attributes')
+                           ->where('wc_id', (int) $attr['wc_id'])
+                           ->update([
+                               'label'     => $attr['label']     ?? $attrRow['label'],
+                               'is_public' => (int) ($attr['is_public'] ?? $attrRow['is_public']),
+                           ]);
+                        $attributeId = $attrRow['id'];
+                    } else {
+                        $db->table('product_attributes')->insert([
+                            'wc_id'     => (int) $attr['wc_id'],
+                            'name'      => $attr['name'],
+                            'label'     => $attr['label'] ?? $attr['name'],
+                            'is_public' => (int) ($attr['is_public'] ?? 0),
+                        ]);
+                        $attributeId = $db->insertID();
+                    }
+
+                    // ── Upsert each value + link to product ──────────────
+                    foreach ($attr['values'] as $val) {
+
+                        if (empty($val['wc_id']) || empty($val['name'])) {
+                            continue;
+                        }
+
+                        $valRow = $db->table('product_attribute_values')
+                                     ->where('wc_id', (int) $val['wc_id'])
+                                     ->get()->getRowArray();
+
+                        if ($valRow) {
+                            $db->table('product_attribute_values')
+                               ->where('wc_id', (int) $val['wc_id'])
+                               ->update([
+                                   'name' => $val['name'],
+                                   'slug' => $val['slug'] ?? $valRow['slug'],
+                               ]);
+                            $valueId = $valRow['id'];
+                        } else {
+                            $db->table('product_attribute_values')->insert([
+                                'wc_id'        => (int) $val['wc_id'],
+                                'attribute_id' => $attributeId,
+                                'slug'         => $val['slug'] ?? '',
+                                'name'         => $val['name'],
+                            ]);
+                            $valueId = $db->insertID();
+                        }
+
+                        // ── Insert pivot row ─────────────────────────────
+                        $db->table('product_attribute_map')->insert([
+                            'product_id'   => $productId,
+                            'attribute_id' => $attributeId,
+                            'value_id'     => $valueId,
+                            'order'        => $attr['order'] ?? null,
+                        ]);
+                    }
+                }
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                log_message('error', 'Transaction failed for wc_id: ' . $data['wc_id']);
+                return $this->fail('Transaction failed', 500);
+            }
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            log_message('error', 'Product receive exception: ' . $e->getMessage());
+            return $this->fail('Server error: ' . $e->getMessage(), 500);
         }
+
+        return $this->respond([
+            'status'     => 'ok',
+            'wc_id'      => $data['wc_id'],
+            'product_id' => $productId,
+        ]);
+    }
 }
