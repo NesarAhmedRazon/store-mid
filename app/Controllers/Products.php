@@ -35,19 +35,25 @@ class Products extends BaseController
     public function preview()
     {
         $id = (int) $this->request->getGet('id');
-
+ 
         if (!$id) {
             return redirect()->to('/products')->with('error', 'Invalid product ID.');
         }
-
+ 
         $product = $this->model->find($id);
-        $attr = new AttributeService();
-        $product->attributes = $attr->getByProductId($product->id);
-        
+ 
         if (!$product) {
             return redirect()->to('/products')->with('error', 'Product not found.');
         }
-
+ 
+        $attr = new AttributeService();
+        $product->attributes = $attr->getByProductId($product->id);
+ 
+        $mediaModel      = new \App\Models\MediaModel();
+        $media           = $mediaModel->getForEntity('product', $product->id);
+        $product->thumb  = $media['thumbnail'];
+        $product->gallery = $media['gallery'];
+ 
         return view('products/preview', [
             'title'   => $product->title,
             'product' => $product,

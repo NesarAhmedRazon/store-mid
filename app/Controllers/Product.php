@@ -1,7 +1,7 @@
 <?php
 // app/Controllers/Product.php
-// Handles incoming POST requests from WooCommerce.
-// Upserts product, attributes, values, and pivot map in a single transaction.
+// Handles incoming POST requests from WooCommerce on $routes->post('posts/product', 'Product::receive');.
+// Upserts product, attributes, values, pivot map, and media in a single transaction.
 
 namespace App\Controllers;
 
@@ -56,6 +56,50 @@ class Product extends ResourceController
                 $productId = $existing->id;
             } else {
                 $productId = $model->insert($productData, true);
+            }
+
+            // ── Media: thumbnail ─────────────────────────────────────────
+            // Remove old media_entities rows for this product so they're re-linked fresh.
+            // The media rows themselves are kept (shared across entities).
+            $db->table('media_entities')
+               ->where('entity_type', 'product')
+               ->where('entity_id', $productId)
+               ->delete();
+
+            $thumbMediaId = null;
+
+            if (!empty($data['thumbnail'])) {
+                $thumbMediaId = $this->upsertUrlMedia($db, $data['thumbnail']);
+
+                $db->table('media_entities')->insert([
+                    'media_id'    => $thumbMediaId,
+                    'entity_type' => 'product',
+                    'entity_id'   => $productId,
+                    'role'        => 'thumbnail',
+                    'sort_order'  => 0,
+                ]);
+            }
+
+            // Keep products.thumb_id in sync for direct FK access (no join needed)
+            $model->update($productId, ['thumb_id' => $thumbMediaId]);
+
+            // ── Media: gallery ───────────────────────────────────────────
+            if (!empty($data['gallery']) && is_array($data['gallery'])) {
+                foreach ($data['gallery'] as $order => $url) {
+                    if (empty($url)) {
+                        continue;
+                    }
+
+                    $mediaId = $this->upsertUrlMedia($db, $url);
+
+                    $db->table('media_entities')->insert([
+                        'media_id'    => $mediaId,
+                        'entity_type' => 'product',
+                        'entity_id'   => $productId,
+                        'role'        => 'gallery',
+                        'sort_order'  => (int) $order,
+                    ]);
+                }
             }
 
             // ── Upsert attributes ────────────────────────────────────────
@@ -153,5 +197,52 @@ class Product extends ResourceController
             'wc_id'      => $data['wc_id'],
             'product_id' => $productId,
         ]);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────
+
+    /**
+     * Upsert a media row for an external URL.
+     * Deduplicates by path so the same WC image URL is never stored twice.
+     *
+     * Returns the media.id.
+     */
+    private function upsertUrlMedia(\CodeIgniter\Database\BaseConnection $db, string $url): int
+    {
+        $existing = $db->table('media')
+                       ->where('disk', 'url')
+                       ->where('path', $url)
+                       ->get()->getRowArray();
+
+        if ($existing) {
+            return (int) $existing['id'];
+        }
+
+        $db->table('media')->insert([
+            'disk'      => 'url',
+            'path'      => $url,
+            'file_name' => basename(parse_url($url, PHP_URL_PATH)) ?: null,
+            'mime_type' => $this->guessMimeFromUrl($url),
+        ]);
+
+        return (int) $db->insertID();
+    }
+
+    /**
+     * Best-effort MIME guess from file extension in a URL.
+     * No HTTP request made — disk=url rows are URL-only.
+     */
+    private function guessMimeFromUrl(string $url): ?string
+    {
+        $ext = strtolower(pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION));
+
+        return match ($ext) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png'         => 'image/png',
+            'gif'         => 'image/gif',
+            'webp'        => 'image/webp',
+            'svg'         => 'image/svg+xml',
+            default       => null,
+        };
     }
 }

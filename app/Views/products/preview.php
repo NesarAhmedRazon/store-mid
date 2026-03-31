@@ -8,16 +8,9 @@
  * DUMMY DATA — remove once these fields are implemented
  * ─────────────────────────────────────────────────────────
  */
-$dummy_main_image = 'https://res.cloudinary.com/dgktjxcrh/image/upload/v1774703111/Ti-TPS54202DDCR_thumbnail_smdpicker_com_idpbid.jpg';
 
-$dummy_gallery = [
-    'https://res.cloudinary.com/dgktjxcrh/image/upload/v1774459302/6.webp',
-    'https://res.cloudinary.com/dgktjxcrh/image/upload/v1774458693/Battery-Management-IC-TP4056-3-smdpicker.com_.webp',
-    'https://res.cloudinary.com/dgktjxcrh/image/upload/v1774458496/Raspberry-Pi-Pico_1_smdpicker.com_.webp',
-    'https://res.cloudinary.com/dgktjxcrh/image/upload/v1774458460/ESP32-C6-WROOM-1-MAN8-Development-Board_1_smdpicker.com_.webp',
-];
 
-$image_data = ['thumb' => $dummy_main_image,'gallery'=>$dummy_gallery];
+
 
 $dummy_categories = [
     ['name' => 'Electronic Components', 'parent' => null],
@@ -25,28 +18,23 @@ $dummy_categories = [
     ['name' => 'Crystal Oscillators',   'parent' => 'Passive Components'],
 ];
 
-$dummy_attributes = [
-    ['name' => 'Frequency',           'value' => '40 MHz'],
-    ['name' => 'Frequency Tolerance', 'value' => '±10 ppm'],
-    ['name' => 'Package',             'value' => 'SMD 4-Pad (4.0 × 2.5 mm)'],
-    ['name' => 'Load Capacitance',    'value' => '12 pF'],
-    ['name' => 'Operating Temp.',     'value' => '-20°C to +70°C'],
-    ['name' => 'Supply Voltage',      'value' => '3.3V'],
-    ['name' => 'Output Type',         'value' => 'HCMOS / TTL'],
-    ['name' => 'RoHS',                'value' => 'Compliant'],
-];
 
 $dummy_tags = [
     'crystal', 'oscillator', '40mhz', 'smd', 'passive', 'timing', 'hcmos', 'ttl',
 ];
 
 
+
+$image_data = ['thumb' => $product->thumb,'gallery'=>$product->gallery ?? []];
 $pricing = [
     'regular_price' => $product->regular_price,
     'sale_price' => $product->sale_price,
     'cost' => $product->cost,
 ];
-
+$stock = [
+    'stock_status' => $product->stock_status ?? 'outofstock',
+    'stock_quantity' => $product->stock_quantity ?? 0,
+];
 
 
 $statusBadge = [
@@ -57,106 +45,56 @@ $statusBadge = [
 ?>
 
 <!-- Breadcrumb -->
-<div class="flex items-center gap-2 text-[12px] font-mono text-subtle mb-5">
+<!-- <div class="flex items-center gap-2 text-[12px] font-mono text-subtle mb-5">
     <a href="/products" class="hover:text-muted transition-colors no-underline">Products</a>
     <span>/</span>
     <span class="text-text"><?= esc($product->title) ?></span>
-</div>
+</div> -->
 
 <!-- Action bar -->
-<div class="flex items-center justify-between mb-5">
-    <div class="flex items-center gap-2">
-        <span class="badge badge-<?= $statusBadge[$product->stock_status] ?? 'info' ?>"><?= esc($product->stock_status) ?></span>
-        <span class="text-[12px] font-mono text-subtle">#<?= esc($product->wc_id) ?></span>
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
+
+    <div class="flex items-center gap-2 min-w-0">
+        <span class="text-xs uppercase tracking-widest text-subtle shrink-0">Last synced:</span>
+        <span class="font-mono text-xs text-text truncate">
+            <?= date('d M y, H:i A', strtotime($product->updated_at)) ?>
+        </span>
     </div>
-    <div class="flex items-center gap-2">
+
+    <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
         <a href="<?= esc($product->permalink) ?>" target="_blank"
-           class="text-[11px] font-mono text-subtle no-underline px-2.5 py-1 border border-border rounded hover:border-border-md hover:text-muted transition-colors">
+           class="flex-1 sm:flex-none text-center text-[11px] font-mono text-subtle no-underline px-2.5 py-1 border border-border rounded hover:border-border-md hover:text-muted transition-colors">
             view on store ↗
         </a>
         <a href="/products?edit=<?= $product->id ?>"
-           class="text-[11px] font-mono text-text no-underline px-2.5 py-1 border border-border-md rounded hover:bg-bg transition-colors">
+           class="flex-1 sm:flex-none text-center text-[11px] font-mono text-text no-underline px-2.5 py-1 border border-border-md rounded hover:bg-bg transition-colors">
             edit →
         </a>
     </div>
+
 </div>
 
-<div class="grid grid-cols-3 gap-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
 
     <!-- ── Left / main column ── -->
-    <div class="col-span-2 flex flex-col gap-4">
-
-        <!-- Images -->
-        <?= view('products/widgets/images', ['data' => $image_data ?? []],['saveData' => false]) ?> 
-
+    <div class="col-span-1 sm:col-span-2 flex flex-col gap-4">
         <!-- Product info -->
-        <div class="card">
-            <div class="card-head">
-                <span class="card-title">Product info</span>
-            </div>
-            <div class="p-5 flex flex-col gap-4">
-                <div>
-                    <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Title</div>
-                    <div class="text-[15px] font-medium text-text"><?= esc($product->title) ?></div>
-                </div>
-                <div class="grid grid-cols-3 gap-4">
-                    <div>
-                        <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">SKU</div>
-                        <div class="font-mono text-[13px] text-text"><?= $product->sku ? esc($product->sku) : '—' ?></div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">WooCommerce ID</div>
-                        <div class="font-mono text-[13px] text-text">#<?= esc($product->wc_id) ?></div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">WC Created</div>
-                        <div class="font-mono text-[13px] text-text">
-                            <?= $product->wc_created_at ? date('d M Y', strtotime($product->wc_created_at)) : '—' ?>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Permalink</div>
-                    <a href="<?= esc($product->permalink) ?>" target="_blank"
-                       class="font-mono text-[12px] text-info no-underline hover:underline break-all">
-                        <?= esc($product->permalink) ?>
-                    </a>
-                </div>
-            </div>
-        </div>
+         <?= view('products/widgets/product_info', ['data' => $product ?? []],['saveData' => false]) ?> 
 
         <!-- Attributes -->
         <?= view('products/widgets/attributs', ['data' => $product->attributes ?? []],['saveData' => false]) ?> 
 
         <!-- Pricing -->
         <?= view('products/widgets/pricing', ['data' => $pricing ?? []],['saveData' => false]) ?> 
-
     </div>
 
     <!-- ── Right / sidebar column ── -->
-    <div class="flex flex-col gap-4">
+    <div class="col-span-1 flex flex-col gap-4">
 
-        <!-- Stock -->
-        <div class="card">
-            <div class="card-head">
-                <span class="card-title">Stock</span>
-            </div>
-            <div class="p-5 flex flex-col gap-4">
-                <div>
-                    <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Status</div>
-                    <span class="badge badge-<?= $statusBadge[$product->stock_status] ?? 'info' ?>">
-                        <?= esc($product->stock_status) ?>
-                    </span>
-                </div>
-                <div>
-                    <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Quantity</div>
-                    <div class="font-mono text-[32px] font-light text-text leading-none">
-                        <?= $product->stock_quantity !== null ? number_format($product->stock_quantity) : '—' ?>
-                    </div>
-                    <div class="text-[10px] text-subtle mt-1">units in stock</div>
-                </div>
-            </div>
-        </div>
+        <!-- Images -->
+        <?= view('products/widgets/images', ['data' => $image_data ?? []],['saveData' => false]) ?> 
+        <!-- Stock -->        
+        <?= view('products/widgets/stock', ['data' => $stock ?? []],['saveData' => false]) ?> 
 
         <!-- Categories -->
         <div class="card">

@@ -20,16 +20,19 @@ class ProductModel extends Model
         'sale_price',
         'regular_price',
         'wc_created_at',
-        'thumb_id',
+        'thumb_id',  // FK → media.id (thumbnail shortcut, no join needed)
         'cost',
+        // gallery lives in media_entities — no gallery_ids column
     ];
 
     protected $useTimestamps = true;
 
+    // ── Single product ───────────────────────────────────────────────────
+
     /**
-     * Get single product with attributes
+     * Get a single product with its attributes and media.
      */
-    public function getWithAttributes(int $productId)
+    public function getWithDetails(int $productId): ?object
     {
         $product = $this->find($productId);
 
@@ -37,15 +40,21 @@ class ProductModel extends Model
             return null;
         }
 
+        $mediaModel = new MediaModel();
+
         $product->attributes = $this->getAttributes($productId);
+        $product->media      = $mediaModel->getForEntity('product', $productId);
 
         return $product;
     }
 
+    // ── Product list ─────────────────────────────────────────────────────
+
     /**
-     * Get multiple products with attributes
+     * Get multiple products with attributes and media.
+     * Uses bulk queries — one extra query for attributes, one for media.
      */
-    public function getListWithAttributes(int $limit = 50, int $offset = 0)
+    public function getListWithDetails(int $limit = 50, int $offset = 0): array
     {
         $products = $this->findAll($limit, $offset);
 
@@ -57,15 +66,25 @@ class ProductModel extends Model
 
         $attributesMap = $this->getAttributesBulk($productIds);
 
-        foreach ($products as &$product) {
-            $product['attributes'] = $attributesMap[$product['id']] ?? [];
+        $mediaModel = new MediaModel();
+        $mediaMap   = $mediaModel->getForEntities('product', $productIds);
+
+        foreach ($products as $product) {
+            $product->attributes = $attributesMap[$product->id] ?? [];
+            $product->media      = $mediaMap[$product->id]      ?? [
+                'thumbnail'  => null,
+                'gallery'    => [],
+                'attachment' => [],
+            ];
         }
 
         return $products;
     }
 
+    // ── Attributes ───────────────────────────────────────────────────────
+
     /**
-     * Get attributes for single product
+     * Get attributes for a single product.
      */
     private function getAttributes(int $productId): array
     {
@@ -81,7 +100,7 @@ class ProductModel extends Model
     }
 
     /**
-     * Bulk attributes (VERY IMPORTANT for performance)
+     * Bulk fetch attributes for multiple products (one query).
      */
     private function getAttributesBulk(array $productIds): array
     {
@@ -100,18 +119,16 @@ class ProductModel extends Model
         $result = [];
 
         foreach ($rows as $row) {
-            $pid = $row['product_id'];
-            $attr = $row['attribute'];
-            $value = $row['value'];
-
-            $result[$pid][$attr][] = $value;
+            $result[$row['product_id']][$row['attribute']][] = $row['value'];
         }
 
         return $result;
     }
 
     /**
-     * Format attribute rows into grouped structure
+     * Format flat attribute rows into a grouped structure.
+     *
+     * [ 'Color' => ['Red', 'Blue'], 'Size' => ['M', 'L'] ]
      */
     private function formatAttributes(array $rows): array
     {
