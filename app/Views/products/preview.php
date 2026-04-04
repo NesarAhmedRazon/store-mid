@@ -35,7 +35,7 @@ $stock = [
     'stock_status' => $product->stock_status ?? 'outofstock',
     'stock_quantity' => $product->stock_quantity ?? 0,
 ];
-
+$categories = $product->categories ?? [];
 
 $statusBadge = [
     'instock'     => 'up',
@@ -97,26 +97,8 @@ $statusBadge = [
         <?= view('products/widgets/stock', ['data' => $stock ?? []],['saveData' => false]) ?> 
 
         <!-- Categories -->
-        <div class="card">
-            <div class="card-head">
-                <span class="card-title">Categories</span>
-                <span class="placeholder-note">not implemented</span>
-            </div>
-            <div class="p-4 flex flex-col gap-1.5">
-                <?php foreach ($dummy_categories as $i => $cat): ?>
-                <div class="flex items-center gap-1.5" style="padding-left: <?= $i * 14 ?>px">
-                    <?php if ($i > 0): ?>
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="shrink-0 text-subtle">
-                        <path d="M2 2v4h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <?php endif; ?>
-                    <span class="text-[12px] <?= $i === count($dummy_categories) - 1 ? 'text-text font-medium' : 'text-muted' ?>">
-                        <?= esc($cat['name']) ?>
-                    </span>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
+         <?= view('products/widgets/categories', ['data' => $categories ?? []],['saveData' => false]) ?> 
+        
 
         <!-- Tags -->
         <div class="card">

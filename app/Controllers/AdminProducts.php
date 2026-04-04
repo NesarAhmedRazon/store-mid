@@ -4,8 +4,9 @@ namespace App\Controllers;
 
 use App\Models\ProductModel;
 use App\Libraries\AttributeService;
+use App\Models\CategoryModel;
 
-class Products extends BaseController
+class AdminProducts extends BaseController
 {
     protected ProductModel $model;
 
@@ -48,6 +49,9 @@ class Products extends BaseController
  
         $attr = new AttributeService();
         $product->attributes = $attr->getByProductId($product->id);
+
+        $cats = new CategoryModel();
+        $product->categories = $cats->getByProduct($product->id);
  
         $mediaModel      = new \App\Models\MediaModel();
         $media           = $mediaModel->getForEntity('product', $product->id);

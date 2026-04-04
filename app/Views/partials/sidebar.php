@@ -72,7 +72,7 @@
             <a href="/products" class="nav-item pl-8 text-[12px] <?= uri_string() === 'products' ? 'text-text font-medium' : '' ?>">
                 All products
             </a>
-            <a href="/products/category" class="nav-item pl-8 text-[12px] <?= str_starts_with(uri_string(), 'products/category') ? 'text-text font-medium' : '' ?>">
+            <a href="/categories" class="nav-item pl-8 text-[12px] <?= str_starts_with(uri_string(), 'categories') ? 'text-text font-medium' : '' ?>">
                 Categories
             </a>
             <a href="/products/attributes" class="nav-item pl-8 text-[12px] <?= str_starts_with(uri_string(), 'products/attributes') ? 'text-text font-medium' : '' ?>">

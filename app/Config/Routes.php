@@ -42,8 +42,15 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
 
     // Products
     $routes->group('products', ['filter' => 'auth'], function($routes) {
-        $routes->get('/', 'Products::index');
-        $routes->get('preview', 'Products::preview');
+        $routes->get('/', 'AdminProducts::index');
+        $routes->get('preview', 'AdminProducts::preview');
+                
+    });
+
+    // Product Categories
+    $routes->group('categories', ['filter' => 'auth'], function($routes) {
+            $routes->get('/', 'AdminCategories::index');
+            $routes->get('(:num)', 'AdminCategories::preview/$1');  
     });
     
     // Admin + Staff
