@@ -17,7 +17,7 @@ class AutoMigrate implements FilterInterface
 public function before(RequestInterface $request, $arguments = null)
 {
     $migrateFlag = filter_var(env('MIGRATE', false), FILTER_VALIDATE_BOOLEAN);
-
+    log_message('debug',ENVIRONMENT);
     if (ENVIRONMENT === 'development' || $migrateFlag) {
 
         $migrate = Services::migrations();

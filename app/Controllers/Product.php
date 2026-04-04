@@ -8,6 +8,7 @@ namespace App\Controllers;
 use CodeIgniter\RESTful\ResourceController;
 use App\Models\ProductModel;
 use CodeIgniter\I18n\Time;
+use App\Models\CategoryModel;
 
 class Product extends ResourceController
 {
@@ -179,6 +180,9 @@ class Product extends ResourceController
                 }
             }
 
+            if (!empty($data['categories']) && is_array($data['categories'])) {
+                $this->handleCategories($db,$productId,$data['categories']);
+            }
             $db->transComplete();
 
             if ($db->transStatus() === false) {
@@ -244,5 +248,39 @@ class Product extends ResourceController
             'svg'         => 'image/svg+xml',
             default       => null,
         };
+    }
+
+    // ----- Category Helper -----
+ // ── Helpers ──────────────────────────────────────────────────────────
+
+    private function handleCategories( \CodeIgniter\Database\BaseConnection $db, int $productId, array $categories ): void {
+        if (empty($categories)) {
+            return;
+        }
+
+        $db->table('product_category_map') ->where('product_id', $productId) ->delete();
+
+        $categoryModel = new CategoryModel();
+
+        foreach ($categories as $index => $cat) {
+
+            if (empty($cat['wc_id']) || empty($cat['name']) || empty($cat['slug'])) {
+                continue;
+            }
+
+            $categoryId = $categoryModel->upsertFromWc([
+                'wc_id'        => $cat['wc_id'],
+                'name'         => $cat['name'],
+                'slug'         => $cat['slug'],
+                'description'  => $cat['description'] ?? null,
+                'wc_parent_id' => $cat['parent']      ?? 0,
+            ]);
+
+            $db->table('product_category_map')->insert([
+                'product_id'  => $productId,
+                'category_id' => $categoryId,
+                'is_primary'  => $index === 0 ? 1 : 0,
+            ]);
+        }
     }
 }
