@@ -30,7 +30,7 @@
             placeholder="search categories..."
             class="flex-1 sm:w-52 text-[12px] font-mono px-3 py-1.5 border border-border rounded-md bg-transparent text-text placeholder:text-subtle focus:outline-none focus:border-border-md"
         >
-        <a href="/categories/create"
+        <a href="categories/create"
            class="shrink-0 text-[11px] font-mono text-text no-underline px-3 py-1.5 border border-border-md rounded-md hover:bg-bg transition-colors">
             + new
         </a>
@@ -77,7 +77,7 @@
                                 <path d="M2 2v4h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                             <?php endif; ?>
-                            <a href="/categories/<?= $cat->id ?>"
+                            <a href="categories/<?= $cat->id ?>"
                                class="text-text font-medium no-underline hover:underline">
                                 <?= esc($cat->name) ?>
                             </a>
@@ -102,9 +102,9 @@
                     <!-- Actions -->
                     <td class="px-4 py-2.5 text-right">
                         <div class="flex items-center justify-end gap-2">
-                            <a href="/categories/<?= $cat->id ?>"
+                            <a href="categories/<?= $cat->id ?>"
                                class="font-mono text-[11px] text-subtle no-underline hover:text-text transition-colors">view</a>
-                            <a href="/categories/<?= $cat->id ?>/edit"
+                            <a href="categories/<?= $cat->id ?>/edit"
                                class="font-mono text-[11px] text-subtle no-underline hover:text-text transition-colors">edit</a>
                             <button
                                 onclick="confirmDelete(<?= $cat->id ?>, '<?= esc($cat->name) ?>')"

@@ -35,7 +35,7 @@ class Product extends ResourceController
 
         try {
             $db->transStart();
-
+            log_message('debug',$data['permalink']);
             // ── Upsert product ───────────────────────────────────────────
             $productData = [
                 'wc_id'          => $data['wc_id'],

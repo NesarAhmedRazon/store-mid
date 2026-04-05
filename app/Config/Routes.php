@@ -28,6 +28,11 @@ $routes->group('api', function ($routes) {
     $routes->group('posts', function ($routes) {
         $routes->post('product', 'Product::receive');
     });
+
+    $routes->group('get', function ($routes) {
+        $routes->get('products/(:segment)', 'EndpointProduct::send/$1');
+        $routes->get('products', 'EndpointProduct::send');
+    });
     
 });
 
@@ -45,13 +50,20 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
         $routes->get('/', 'AdminProducts::index');
         $routes->get('preview', 'AdminProducts::preview');
                 
+    
+        // Product Categories
+        $routes->group('categories', ['filter' => 'auth'], function($routes) {
+                $routes->get('/',              'AdminCategories::index');
+                $routes->get('(:num)',         'AdminCategories::preview/$1');
+                $routes->get('create',         'AdminCategories::create');
+                $routes->post('store',         'AdminCategories::store');
+                $routes->get('(:num)/edit',    'AdminCategories::edit/$1');
+                $routes->post('(:num)/update', 'AdminCategories::update/$1');
+                $routes->get('(:num)/delete',  'AdminCategories::delete/$1');
+            });
     });
-
-    // Product Categories
-    $routes->group('categories', ['filter' => 'auth'], function($routes) {
-            $routes->get('/', 'AdminCategories::index');
-            $routes->get('(:num)', 'AdminCategories::preview/$1');  
-    });
+    
+    
     
     // Admin + Staff
     $routes->group('', ['filter' => 'role:admin,staff'], function($routes) {

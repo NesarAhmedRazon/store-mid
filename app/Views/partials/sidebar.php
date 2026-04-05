@@ -72,7 +72,7 @@
             <a href="/products" class="nav-item pl-8 text-[12px] <?= uri_string() === 'products' ? 'text-text font-medium' : '' ?>">
                 All products
             </a>
-            <a href="/categories" class="nav-item pl-8 text-[12px] <?= str_starts_with(uri_string(), 'categories') ? 'text-text font-medium' : '' ?>">
+            <a href="/products/categories" class="nav-item pl-8 text-[12px] <?= str_starts_with(uri_string(), 'categories') ? 'text-text font-medium' : '' ?>">
                 Categories
             </a>
             <a href="/products/attributes" class="nav-item pl-8 text-[12px] <?= str_starts_with(uri_string(), 'products/attributes') ? 'text-text font-medium' : '' ?>">
@@ -82,7 +82,7 @@
 
         <?php if (session()->get('role') === 'admin'): ?>
         <div class="text-[10px] uppercase tracking-widest text-subtle px-2.5 pt-4 pb-1">Admin</div>
-        <a href="#" class="nav-item">
+        <a href="/users" class="nav-item">
             <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M1 13c0-2.761 2.239-5 5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M11 9v6M8 12h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
             Users
         </a>

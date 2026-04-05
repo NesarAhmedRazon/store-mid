@@ -26,16 +26,11 @@ class CategoryModel extends Model
 
     // ── Write helpers ────────────────────────────────────────────────────
 
-    /**
-     * Insert a category and automatically compute path + depth from parent.
-     * Returns the new category ID.
-     */
     public function insertWithPath(array $data): int
     {
         if (!empty($data['parent_id'])) {
-            $parent = $this->find($data['parent_id']);
+            $parent        = $this->find($data['parent_id']);
             $data['depth'] = $parent ? $parent->depth + 1 : 0;
-            // path will be set after we know our own ID
         } else {
             $data['parent_id'] = null;
             $data['depth']     = 0;
@@ -43,21 +38,15 @@ class CategoryModel extends Model
 
         $id = $this->insert($data, true);
 
-        // Build path now that we have our own ID
-        if (!empty($data['parent_id']) && isset($parent)) {
-            $path = $parent->path . '/' . $id;
-        } else {
-            $path = (string) $id;
-        }
+        $path = (!empty($data['parent_id']) && isset($parent))
+            ? $parent->path . '/' . $id
+            : (string) $id;
 
         $this->update($id, ['path' => $path]);
 
         return $id;
     }
 
-    /**
-     * Move a category to a new parent and rebuild paths for it and all descendants.
-     */
     public function moveTo(int $id, ?int $newParentId): bool
     {
         $category = $this->find($id);
@@ -68,31 +57,25 @@ class CategoryModel extends Model
         $oldPath = $category->path;
 
         if ($newParentId) {
-            $parent  = $this->find($newParentId);
-            $newPath = $parent->path . '/' . $id;
+            $parent   = $this->find($newParentId);
+            $newPath  = $parent->path . '/' . $id;
             $newDepth = $parent->depth + 1;
         } else {
             $newPath  = (string) $id;
             $newDepth = 0;
         }
 
-        // Update the moved category itself
         $this->update($id, [
             'parent_id' => $newParentId,
             'path'      => $newPath,
             'depth'     => $newDepth,
         ]);
 
-        // Rebuild paths for all descendants in one pass
-        $descendants = $this->getDescendants($id);
-
-        foreach ($descendants as $desc) {
-            $updatedPath  = $newPath . substr($desc->path, strlen($oldPath));
-            $updatedDepth = substr_count($updatedPath, '/');
-
+        foreach ($this->getDescendants($id) as $desc) {
+            $updatedPath = $newPath . substr($desc->path, strlen($oldPath));
             $this->update($desc->id, [
                 'path'  => $updatedPath,
-                'depth' => $updatedDepth,
+                'depth' => substr_count($updatedPath, '/'),
             ]);
         }
 
@@ -101,10 +84,6 @@ class CategoryModel extends Model
 
     // ── Hierarchy queries ────────────────────────────────────────────────
 
-    /**
-     * All descendants of a category (any depth).
-     * Uses path prefix scan — no recursion needed.
-     */
     public function getDescendants(int $id): array
     {
         $category = $this->find($id);
@@ -113,14 +92,11 @@ class CategoryModel extends Model
         }
 
         return $this->where('path !=', $category->path)
-                    ->like('path', $category->path . '/', 'after')  // prefix: "path/"
+                    ->like('path', $category->path . '/', 'after')
                     ->orderBy('path', 'ASC')
                     ->findAll();
     }
 
-    /**
-     * Direct children only.
-     */
     public function getChildren(int $parentId): array
     {
         return $this->where('parent_id', $parentId)
@@ -129,10 +105,6 @@ class CategoryModel extends Model
                     ->findAll();
     }
 
-    /**
-     * All ancestors of a category, ordered root → parent.
-     * Parses the path string — no recursive query.
-     */
     public function getAncestors(int $id): array
     {
         $category = $this->find($id);
@@ -149,7 +121,6 @@ class CategoryModel extends Model
             return [];
         }
 
-        // Preserve root → parent order using FIELD()
         $ids = implode(',', array_map('intval', $ancestorIds));
 
         return $this->db
@@ -160,33 +131,21 @@ class CategoryModel extends Model
                     ->getResult();
     }
 
-    /**
-     * Full breadcrumb array for a category, root first.
-     * [ {id, name, slug}, ... , category itself ]
-     */
     public function getBreadcrumb(int $id): array
     {
-        $category  = $this->find($id);
+        $category = $this->find($id);
         if (!$category) {
             return [];
         }
 
-        $ancestors = $this->getAncestors($id);
-
-        return [...$ancestors, $category];
+        return [...$this->getAncestors($id), $category];
     }
 
-    /**
-     * Entire tree as a flat list ordered by path (natural hierarchy order).
-     */
     public function getTree(): array
     {
         return $this->orderBy('path', 'ASC')->findAll();
     }
 
-    /**
-     * All root categories (depth = 0).
-     */
     public function getRoots(): array
     {
         return $this->where('depth', 0)
@@ -197,9 +156,6 @@ class CategoryModel extends Model
 
     // ── Product linkage ──────────────────────────────────────────────────
 
-    /**
-     * All categories a product belongs to, primary first.
-     */
     public function getByProduct(int $productId): array
     {
         return $this->db->table('product_category_map pcm')
@@ -212,10 +168,6 @@ class CategoryModel extends Model
                         ->getResult();
     }
 
-    /**
-     * All products in a category AND its descendants (subtree).
-     * Useful for browsing — "show all Electronics" includes sub-categories.
-     */
     public function getProductIds(int $categoryId, bool $includeDescendants = true): array
     {
         if ($includeDescendants) {
@@ -224,11 +176,9 @@ class CategoryModel extends Model
                 return [];
             }
 
-            // Collect this category + all descendant IDs
-            $descendants = $this->getDescendants($categoryId);
-            $catIds      = array_merge(
+            $catIds = array_merge(
                 [$categoryId],
-                array_column($descendants, 'id')
+                array_column($this->getDescendants($categoryId), 'id')
             );
         } else {
             $catIds = [$categoryId];
@@ -244,20 +194,35 @@ class CategoryModel extends Model
         return array_column($rows, 'product_id');
     }
 
+    /**
+     * Bulk product counts for ALL categories in one query.
+     * Returns [ category_id => count ] for O(1) lookup.
+     *
+     * Direct assignments only (not subtree) — use getProductIds()
+     * when you need the full descendant count.
+     */
+    public function getProductCountsAll(): array
+    {
+        $rows = $this->db->table('product_category_map')
+                         ->select('category_id, COUNT(DISTINCT product_id) as count')
+                         ->groupBy('category_id')
+                         ->get()
+                         ->getResultArray();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(int) $row['category_id']] = (int) $row['count'];
+        }
+
+        return $counts;
+    }
+
     // ── Upsert from WooCommerce ──────────────────────────────────────────
 
-    /**
-     * Upsert a category from a WC webhook payload.
-     * Handles parent resolution and path computation automatically.
-     *
-     * Expected $data keys:
-     *   wc_id, name, slug, description?, wc_parent_id?
-     */
     public function upsertFromWc(array $data): int
     {
         $existing = $this->where('wc_id', (int) $data['wc_id'])->first();
 
-        // Resolve parent by wc_id if provided
         $parentId = null;
         if (!empty($data['wc_parent_id']) && (int) $data['wc_parent_id'] !== 0) {
             $parent = $this->where('wc_id', (int) $data['wc_parent_id'])->first();
@@ -275,7 +240,6 @@ class CategoryModel extends Model
         ];
 
         if ($existing) {
-            // If parent changed, moveTo() will rebuild paths for the subtree
             if ($existing->parent_id !== $parentId) {
                 $this->moveTo($existing->id, $parentId);
             }
