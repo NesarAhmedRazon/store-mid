@@ -15,6 +15,15 @@ class EndpointProduct extends ResourceController
      */
     public function send(string $categorySlug = null): \CodeIgniter\HTTP\ResponseInterface
     {
+        // ── Auth ────────────────────────────────────────────────────────
+        $secret = $this->request->getHeaderLine('x-front-webhook-secret');
+
+        if ($secret !== env('FRONT_WEBHOOK_SECRET')) {
+            log_message('error', 'Invalid webhook secret provided');
+            return $this->failUnauthorized('Invalid webhook secret');
+        }
+
+
         $db = \Config\Database::connect();
 
         // ── Base query ───────────────────────────────────────────────────
