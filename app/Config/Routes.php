@@ -29,11 +29,13 @@ $routes->group('api', function ($routes) {
         $routes->post('product', 'Product::receive');
     });
 
-    $routes->group('get', function ($routes) {
-        $routes->get('products/(:segment)', 'EndpointProduct::send/$1');
-        $routes->get('products', 'EndpointProduct::send');
-    });
     
+    
+});
+
+$routes->group('api/get', function ($routes) {
+    $routes->get('products/(:segment)', 'EndpointProduct::send/$1');
+    $routes->get('products', 'EndpointProduct::send');
 });
 
 $routes->get('/', 'Auth::login');

@@ -16,8 +16,9 @@ class EndpointProduct extends ResourceController
      * GET /api/get/products/{categorySlug}
      *
      * Query params:
-     *   mode=slug_only  → title + permalink only, no sorting
-     *   mode=full       → all fields + sorted (default behaviour)
+     *   view=minimal  → title + permalink only, no sorting
+     *   view=summary → title + permalink + updated_at, sorted by updated_at desc
+     *   view=full       → all fields + sorted (default behaviour)
      *   page=N          → placeholder for future pagination
      *   per_page=N      → placeholder for future pagination
      */
@@ -25,40 +26,45 @@ class EndpointProduct extends ResourceController
     {
         // ── Auth ─────────────────────────────────────────────────────────
         $secret = $this->request->getHeaderLine('x-front-webhook-secret');
-
         if ($secret !== env('FRONT_WEBHOOK_SECRET')) {
             log_message('error', 'Invalid webhook secret provided');
             return $this->failUnauthorized('Invalid webhook secret');
         }
 
-        $mode     = $this->request->getGet('mode') ?? 'full';
-        $slugOnly = $mode === 'slug_only';
+        // ── Input Handling ───────────────────────────────────────────────
+        $view    = $this->request->getGet('view') ?? 'full';
+        $mode    = in_array($view, ['minimal', 'summary', 'full']) ? $view : 'full';
+        
+        // Pagination placeholders
+        $page    = (int) ($this->request->getGet('page') ?? 1);
+        $perPage = (int) ($this->request->getGet('per_page') ?? 100);
 
         $db = \Config\Database::connect();
 
-        // ── Select fields ─────────────────────────────────────────────────
-        // slug_only: minimal fields — no sorting needed
-        // full:      include stock_status + regular_price for ProductSorter
-        $select = $slugOnly
-            ? 'p.id, p.title, p.permalink, p.updated_at'
-            : 'p.id, p.title, p.permalink, p.updated_at, p.stock_status, p.regular_price';
+        // ── Field Selection ──────────────────────────────────────────────
+        // 'minimal': ID, Title, Permalink (No sorting fields needed)
+        // 'summary': ID, Title, Permalink, Updated_at + Sorter fields
+        // 'full':    * (Everything)
+        if ($mode === 'minimal') {
+            $select = 'p.title, p.permalink';
+        } elseif ($mode === 'summary') {
+            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status, p.regular_price';
+        } else {
+            $select = 'p.*'; // Or list all specific full fields
+        }
 
         $builder = $db->table('products p')->select($select);
 
-        // ── Filter by category (+ descendants) if slug provided ───────────
+        // ── Category Filter ──────────────────────────────────────────────
         if ($categorySlug !== null) {
             $categoryModel = new CategoryModel();
             $category      = $categoryModel->where('slug', $categorySlug)->first();
 
             if (!$category) {
-                return $this->respond([
-                    'status'  => 'error',
-                    'message' => 'Category not found',
-                ], 404);
+                return $this->respond(['status' => 'error', 'message' => 'Category not found'], 404);
             }
 
             $productIds = $categoryModel->getProductIds($category->id, includeDescendants: true);
-
             if (empty($productIds)) {
                 return $this->respond([
                     'status'   => 'ok',
@@ -67,23 +73,31 @@ class EndpointProduct extends ResourceController
                     'products' => [],
                 ]);
             }
-
             $builder->whereIn('p.id', $productIds);
         }
 
-        // ── Execute ───────────────────────────────────────────────────────
-        $products = $builder
-            ->orderBy('p.updated_at', 'DESC')
-            ->get()
-            ->getResultArray();
+        // ── Execution ────────────────────────────────────────────────────
+        // Default DB sort is updated_at desc
+        $products = $builder->orderBy('p.updated_at', 'DESC')->get()->getResultArray();
 
-        // ── Sort + filter (skip for slug_only) ────────────────────────────
-        if (!$slugOnly) {
+        // ── Sorting (Skip for minimal) ───────────────────────────────────
+        if ($mode !== 'minimal') {
             $products = ProductSorter::sort($products);
         }
 
-        // ── Clean permalinks ──────────────────────────────────────────────
-        foreach ($products as &$product) {
+        // ── Data Transformation ──────────────────────────────────────────
+        $productIds = array_column($products, 'id');
+        $mediaMap   = [];
+        $mediaModel = new MediaModel();
+
+        // Only fetch images if NOT minimal
+        if ($mode !== 'minimal' && !empty($productIds)) {
+            $mediaMap = $mediaModel->getForEntities('product', $productIds);
+        }
+
+        $finalProducts = [];
+        foreach ($products as $product) {
+            // 1. Clean Permalink
             if (!empty($product['permalink'])) {
                 $product['permalink'] = '/' . ltrim(
                     preg_replace('/^\/?(product|products)\/?/', '', $product['permalink']),
@@ -91,45 +105,62 @@ class EndpointProduct extends ResourceController
                 );
                 $product['permalink'] = rtrim($product['permalink'], '/');
             }
-        }
-        unset($product);
 
-        // ── Strip sorter-only fields before responding ────────────────────
-        // Don't expose stock_status / regular_price unless the caller needs them
-        if (!$slugOnly) {
-            $products = array_map(function ($p) {
-                unset($p['stock_status'], $p['regular_price']);
-                return $p;
-            }, $products);
-        }
+            // 2. Attach Images (Summary & Full only)
+            // ── Attach images (Only if NOT minimal) ────────────────────────────
+            if ($mode !== 'minimal') {
+                $productIds = array_column($products, 'id');
+                $mediaModel = new MediaModel();
 
-        // ── Attach images (skip for slug_only) ────────────────────────────
-        if (!$slugOnly) {
-            $productIds  = array_column($products, 'id');
-            $mediaModel  = new MediaModel();
-            $mediaMap    = $mediaModel->getForEntities('product', $productIds);
+                // Decide which roles to fetch from the DB
+                $requestedRoles = ($mode === 'summary') ? ['thumbnail'] : ['thumbnail', 'gallery'];
+                
+                $mediaMap = $mediaModel->getForEntities('product', $productIds, $requestedRoles);
 
-            $products = array_map(function ($p) use ($mediaMap, $mediaModel) {
-                $media     = $mediaMap[$p['id']] ?? ['thumbnail' => null, 'gallery' => []];
-                $p['images'] = $this->formatImages($media, $mediaModel);
-                unset($p['id']); // id was only needed for the media join
-                return $p;
-            }, $products);
-        } else {
-            // slug_only — just drop the id
-            $products = array_map(function ($p) {
-                unset($p['id']);
-                return $p;
-            }, $products);
+                $products = array_map(function ($p) use ($mediaMap, $mediaModel, $mode) {
+                    $media = $mediaMap[$p['id']] ?? ['thumbnail' => null, 'gallery' => []];
+                    
+                    if ($mode === 'summary') {
+                        // Summary: Thumbnail only
+                        $p['images'] = [
+                            'thumbnail' => $media['thumbnail'] 
+                                ? $this->formatImage($media['thumbnail'], $mediaModel) 
+                                : null
+                        ];
+                    } else {
+                        // Full: Thumbnail + Gallery
+                        $p['images'] = $this->formatImages($media, $mediaModel);
+                    }
+
+                    unset($p['id']); 
+                    return $p;
+                }, $products);
+            } else {
+                // Minimal: Just drop IDs
+                $products = array_map(function ($p) {
+                    unset($p['id']);
+                    return $p;
+                }, $products);
+            }
+
+            // 3. Strip Internal/Unnecessary Fields
+            // Remove fields used only for sorting
+            unset($product['stock_status'], $product['regular_price']);
+            
+            // Remove ID if not explicitly needed in payload (usually minimal wants it as 'id')
+            // If you want to keep ID for all, remove this line:
+            if ($mode !== 'minimal') unset($product['id']); 
+
+            $finalProducts[] = $product;
         }
 
         // ── Response ──────────────────────────────────────────────────────
         $payload = [
             'status'      => 'ok',
-            'mode'        => $mode,
-            'total'       => count($products),
-            'total_pages' => 1, // TODO: implement real pagination
-            'products'    => $products,
+            'view'        => $mode,
+            'total'       => count($finalProducts),
+            'total_pages' => 1, 
+            'products'    => $finalProducts,
         ];
 
         if ($categorySlug !== null) {

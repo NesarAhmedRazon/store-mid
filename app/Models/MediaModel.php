@@ -83,42 +83,44 @@ class MediaModel extends Model
      *   ...
      * ]
      */
-    public function getForEntities(string $entityType, array $entityIds): array
-    {
-        if (empty($entityIds)) {
-            return [];
-        }
-
-        $rows = $this->db->table('media_entities me')
-            ->select('m.*, me.entity_id, me.role, me.sort_order')
-            ->join('media m', 'm.id = me.media_id')
-            ->where('me.entity_type', $entityType)
-            ->whereIn('me.entity_id', $entityIds)
-            ->orderBy('me.sort_order', 'ASC')
-            ->get()
-            ->getResult();
-
-        // Group by entity_id first, then by role
-        $result = [];
-
-        foreach ($rows as $row) {
-            $eid = $row->entity_id;
-            $result[$eid] ??= [];
-
-            $grouped         = &$result[$eid];
-            $grouped['thumbnail']  ??= null;
-            $grouped['gallery']    ??= [];
-            $grouped['attachment'] ??= [];
-
-            if ($row->role === 'thumbnail') {
-                $grouped['thumbnail'] = $row;
-            } else {
-                $grouped[$row->role][] = $row;
-            }
-        }
-
-        return $result;
+/**
+ * Bulk fetch media with optional role filtering.
+ */
+public function getForEntities(string $entityType, array $entityIds, array $roles = []): array
+{
+    if (empty($entityIds)) {
+        return [];
     }
+
+    $builder = $this->db->table('media_entities me')
+        ->select('m.*, me.entity_id, me.role, me.sort_order')
+        ->join('media m', 'm.id = me.media_id')
+        ->where('me.entity_type', $entityType)
+        ->whereIn('me.entity_id', $entityIds);
+
+    // --- Optimization: Filter by role if provided ---
+    if (!empty($roles)) {
+        $builder->whereIn('me.role', $roles);
+    }
+
+    $rows = $builder->orderBy('me.sort_order', 'ASC')
+        ->get()
+        ->getResult();
+
+    $result = [];
+    foreach ($rows as $row) {
+        $eid = $row->entity_id;
+        $result[$eid] ??= ['thumbnail' => null, 'gallery' => [], 'attachment' => []];
+
+        if ($row->role === 'thumbnail') {
+            $result[$eid]['thumbnail'] = $row;
+        } else {
+            $result[$eid][$row->role][] = $row;
+        }
+    }
+
+    return $result;
+}
 
     /**
      * Convenience: get just the thumbnail for one entity.
