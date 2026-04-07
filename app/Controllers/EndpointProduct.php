@@ -27,12 +27,17 @@ class EndpointProduct extends ResourceController
 {
     // 1. Auth
     $secret = $this->request->getHeaderLine('x-front-webhook-secret');
-    if ($secret !== env('FRONT_WEBHOOK_SECRET')) {
+    $check_secret = env('FRONT_WEBHOOK_SECRET');
+    if (!hash_equals(trim($check_secret), trim($secret))) {
+        
         return $this->failUnauthorized('Invalid webhook secret');
     }
 
     // 2. Inputs
     $view = $this->request->getGet('view') ?? 'full';
+    $perPage = $this->request->getGet('per_page') ?? 10;
+    $page = $this->request->getGet('page') ?? 1;
+
     $mode = in_array($view, ['minimal', 'summary', 'full']) ? $view : 'full';
 
     $db = \Config\Database::connect();
@@ -46,7 +51,15 @@ class EndpointProduct extends ResourceController
         $select = 'p.*'; 
     }
 
-    $builder = $db->table('products p')->select($select);
+    // impliment pagination 
+    
+    if($perPage == 'all' && $mode === 'minimal') {
+        $builder = $db->table('products p')->select($select);
+    } else {
+       $builder = $db->table('products p')->select($select)->limit($perPage, ($page - 1) * $perPage);
+    }
+
+    
 
     // 4. Category Filter Logic (Your existing logic)
     if ($categorySlug !== null) {
