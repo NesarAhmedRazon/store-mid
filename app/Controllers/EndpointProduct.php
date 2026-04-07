@@ -83,9 +83,13 @@ class EndpointProduct extends ResourceController
     foreach ($products as $product) {
         // Clean Permalink
         if (!empty($product['permalink'])) {
-            $product['permalink'] = '/' . ltrim(preg_replace('/^\/?(product|products)\/?/', '', $product['permalink']), '/');
-            $product['permalink'] = rtrim($product['permalink'], '/');
+            // 1. Remove the 'product/' or 'products/' prefix
+            $cleanPath = preg_replace('/^\/?(product|products)\/?/', '', $product['permalink']);
+            
+            // 2. Trim slashes from BOTH ends without prepending a new one
+            $product['permalink'] = trim($cleanPath, '/');
         }
+        
 
         // Attach Images (using the model helper)
         if ($mode !== 'minimal') {
