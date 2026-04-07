@@ -159,4 +159,53 @@ public function getForEntities(string $entityType, array $entityIds, array $role
 
         return $grouped;
     }
+
+ /**
+ * In App\Models\MediaModel
+ */
+public function getFlatImages(array $media, string $mode): array
+{
+    $list = [];
+
+    // 1. Add Thumbnail
+    if (!empty($media['thumbnail'])) {
+        $list[] = $this->formatImage($media['thumbnail']);
+    }
+
+    // 2. Add Gallery (if full mode)
+    if ($mode === 'full' && !empty($media['gallery'])) {
+        foreach ($media['gallery'] as $img) {
+            $list[] = $this->formatImage($img);
+        }
+    }
+
+    // 3. Sort by DB sort_order first
+    usort($list, function ($a, $b) {
+        return ($a['sort_order'] ?? 0) <=> ($b['sort_order'] ?? 0);
+    });
+
+    // 4. Force Sequential Indexing (0, 1, 2, 3...)
+    foreach ($list as $index => &$item) {
+        $item['sort_order'] = $index;
+    }
+    unset($item);
+
+    return $list;
+}
+
+/**
+ * Format a single media object into the frontend shape
+ */
+    private function formatImage(object $media): array
+    {
+        $args = [
+            'src' => $this->resolveUrl($media),
+            'sort_order' => (int) ($media->sort_order ?? 0),
+        ];
+        $media->alt && $args['alt'] = $media->alt;
+        $media->title && $args['title'] = $media->title;
+        $media->width && $args['width'] = (int) $media->width;
+        $media->height && $args['height'] = (int) $media->height;
+        return $args;
+    }
 }
