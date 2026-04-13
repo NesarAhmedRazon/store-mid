@@ -6,3 +6,5 @@ writable/*/*.json
 writable/*/*.log
 writable/*/*.txt
 writable/session/ci_s*
+node_modules/
+*_modules/
