@@ -37,6 +37,7 @@ class EndpointProduct extends ResourceController
     $view = $this->request->getGet('view') ?? 'full';
     $perPage = $this->request->getGet('per_page') ?? 10;
     $page = $this->request->getGet('page') ?? 1;
+    $categorySlug = $categorySlug ?? $this->request->getGet('category');
 
     $mode = in_array($view, ['minimal', 'summary', 'full']) ? $view : 'full';
 
