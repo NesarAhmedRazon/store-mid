@@ -38,7 +38,12 @@ class CourierWebhook extends ResourceController
                     $this->response   // <--- Pass CI response
                 );
             case 'steadfast':
-                return (new SteadfastCourier())->handle($data, $providerRow->auth_token);
+                return (new SteadfastCourier())->handle(
+                    $data,
+                    $providerRow->auth_token,
+                    $this->request,
+                    $this->response
+                );
             default:
                 return $this->fail('Unknown provider', 400);
         }
