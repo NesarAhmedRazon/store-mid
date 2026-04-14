@@ -37,6 +37,7 @@ class Filters extends BaseFilters
         'automigrate' => \App\Filters\AutoMigrate::class,
         'auth' => \App\Filters\AuthFilter::class,
         'role' => \App\Filters\RoleFilter::class,
+        'apiAuth' => \App\Filters\ApiAuthFilter::class,
     ];
 
     /**
@@ -110,5 +111,7 @@ class Filters extends BaseFilters
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        'apiAuth' => ['before' => ['api/*']],
+    ];
 }

@@ -34,7 +34,7 @@ class EndpointProduct extends ResourceController
     }
 
     // 2. Inputs
-    $view = $this->request->getGet('view') ?? 'full';
+    $view = $this->request->getGet('mode') ?? 'full';
     $perPage = $this->request->getGet('per_page') ?? 10;
     $page = $this->request->getGet('page') ?? 1;
     $categorySlug = $categorySlug ?? $this->request->getGet('category');
@@ -91,7 +91,7 @@ class EndpointProduct extends ResourceController
     if ($mode !== 'minimal') {
         $products = \App\Libraries\ProductSorter::sort($products);
     }
-
+error_log($mode);
     // 8. Final Transformation Loop
     $finalProducts = [];
     foreach ($products as $product) {
@@ -139,7 +139,7 @@ class EndpointProduct extends ResourceController
 
     return $this->respond([
         'status'   => 'ok',
-        'view'     => $mode,
+        'mode'     => $mode,
         'total'    => count($finalProducts),
         'products' => $finalProducts,
     ]);

@@ -34,11 +34,11 @@ $routes->group('api', function ($routes) {
 });
 
 $routes->group('api/get', function ($routes) {
-    $routes->get('products/(:segment)', 'EndpointProduct::send/$1');
-    $routes->get('products', 'EndpointProduct::send');
+    $routes->get('products/(:segment)', 'EndpointProductX::send/$1');
+    $routes->get('products', 'EndpointProductX::send');
 
-    $routes->get('categories', 'EndpointCategory::send');
-    
+    $routes->get('categories', 'EndpointCategoryX::send');
+    $routes->get('category/(:segment)', 'EndpointCategoryX::categoryBySlug/$1');
 });
 
 $routes->get('/', 'Auth::login');
