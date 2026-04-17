@@ -9,6 +9,7 @@ use CodeIgniter\RESTful\ResourceController;
 use App\Models\ProductModel;
 use CodeIgniter\I18n\Time;
 use App\Models\CategoryModel;
+use App\Models\MetaModel;
 
 class Product extends ResourceController
 {
@@ -25,17 +26,19 @@ class Product extends ResourceController
         // ── Parse payload ───────────────────────────────────────────────
         $data = $this->request->getJSON(true);
 
+
         if (!$data || empty($data['wc_id']) || empty($data['title']) || empty($data['permalink'])) {
             log_message('error', 'Invalid or empty JSON payload');
             return $this->fail('Missing required fields', 422);
         }
+
 
         $db    = \Config\Database::connect();
         $model = new ProductModel();
 
         try {
             $db->transStart();
-            log_message('debug',$data['permalink']);
+            log_message('debug', $data['permalink']);
             // ── Upsert product ───────────────────────────────────────────
             $productData = [
                 'wc_id'          => $data['wc_id'],
@@ -63,9 +66,9 @@ class Product extends ResourceController
             // Remove old media_entities rows for this product so they're re-linked fresh.
             // The media rows themselves are kept (shared across entities).
             $db->table('media_entities')
-               ->where('entity_type', 'product')
-               ->where('entity_id', $productId)
-               ->delete();
+                ->where('entity_type', 'product')
+                ->where('entity_id', $productId)
+                ->delete();
 
             $thumbMediaId = null;
 
@@ -108,8 +111,8 @@ class Product extends ResourceController
 
                 // Clear existing pivot rows — will be re-linked fresh below
                 $db->table('product_attribute_map')
-                   ->where('product_id', $productId)
-                   ->delete();
+                    ->where('product_id', $productId)
+                    ->delete();
 
                 foreach ($data['attributes'] as $attr) {
 
@@ -119,16 +122,16 @@ class Product extends ResourceController
 
                     // ── Upsert attribute row ─────────────────────────────
                     $attrRow = $db->table('product_attributes')
-                                  ->where('wc_id', (int) $attr['wc_id'])
-                                  ->get()->getRowArray();
+                        ->where('wc_id', (int) $attr['wc_id'])
+                        ->get()->getRowArray();
 
                     if ($attrRow) {
                         $db->table('product_attributes')
-                           ->where('wc_id', (int) $attr['wc_id'])
-                           ->update([
-                               'label'     => $attr['label']     ?? $attrRow['label'],
-                               'is_public' => (int) ($attr['is_public'] ?? $attrRow['is_public']),
-                           ]);
+                            ->where('wc_id', (int) $attr['wc_id'])
+                            ->update([
+                                'label'     => $attr['label']     ?? $attrRow['label'],
+                                'is_public' => (int) ($attr['is_public'] ?? $attrRow['is_public']),
+                            ]);
                         $attributeId = $attrRow['id'];
                     } else {
                         $db->table('product_attributes')->insert([
@@ -148,16 +151,16 @@ class Product extends ResourceController
                         }
 
                         $valRow = $db->table('product_attribute_values')
-                                     ->where('wc_id', (int) $val['wc_id'])
-                                     ->get()->getRowArray();
+                            ->where('wc_id', (int) $val['wc_id'])
+                            ->get()->getRowArray();
 
                         if ($valRow) {
                             $db->table('product_attribute_values')
-                               ->where('wc_id', (int) $val['wc_id'])
-                               ->update([
-                                   'name' => $val['name'],
-                                   'slug' => $val['slug'] ?? $valRow['slug'],
-                               ]);
+                                ->where('wc_id', (int) $val['wc_id'])
+                                ->update([
+                                    'name' => $val['name'],
+                                    'slug' => $val['slug'] ?? $valRow['slug'],
+                                ]);
                             $valueId = $valRow['id'];
                         } else {
                             $db->table('product_attribute_values')->insert([
@@ -181,15 +184,46 @@ class Product extends ResourceController
             }
 
             if (!empty($data['categories']) && is_array($data['categories'])) {
-                $this->handleCategories($db,$productId,$data['categories']);
+                $this->handleCategories($db, $productId, $data['categories']);
             }
+
+            // ── Upsert product metas ─────────────────────────────────────
+            // Expects $data['metas'] as an array of { slug, label, value } objects.
+            // Uses replace=true so stale keys from a previous sync are always removed.
+
+            // Define your allowed meta keys
+            $allowedMetaKeys = [
+                // 'trd_price',
+                'rating',
+                'total_sales',
+                'extra_documents',
+                'sku',
+                'stock_status',
+                'seo',
+                // Add other meta keys you want to process
+            ];
+
+            if (!empty($data['metas']) && is_array($data['metas'])) {
+                // Filter only the allowed meta keys
+                $filteredMeta = array_intersect_key($data['metas'], array_flip($allowedMetaKeys));
+
+                // Only sync if there are allowed meta keys
+                if (!empty($filteredMeta)) {
+                    (new MetaModel())->syncFromPayload(
+                        MetaModel::ENTITY_PRODUCT,
+                        $productId,
+                        $filteredMeta,
+                        replace: true
+                    );
+                }
+            }
+
             $db->transComplete();
 
             if ($db->transStatus() === false) {
                 log_message('error', 'Transaction failed for wc_id: ' . $data['wc_id']);
                 return $this->fail('Transaction failed', 500);
             }
-
         } catch (\Exception $e) {
             $db->transRollback();
             log_message('error', 'Product receive exception: ' . $e->getMessage());
@@ -214,9 +248,9 @@ class Product extends ResourceController
     private function upsertUrlMedia(\CodeIgniter\Database\BaseConnection $db, string $url): int
     {
         $existing = $db->table('media')
-                       ->where('disk', 'url')
-                       ->where('path', $url)
-                       ->get()->getRowArray();
+            ->where('disk', 'url')
+            ->where('path', $url)
+            ->get()->getRowArray();
 
         if ($existing) {
             return (int) $existing['id'];
@@ -251,14 +285,15 @@ class Product extends ResourceController
     }
 
     // ----- Category Helper -----
- // ── Helpers ──────────────────────────────────────────────────────────
+    // ── Helpers ──────────────────────────────────────────────────────────
 
-    private function handleCategories( \CodeIgniter\Database\BaseConnection $db, int $productId, array $categories ): void {
+    private function handleCategories(\CodeIgniter\Database\BaseConnection $db, int $productId, array $categories): void
+    {
         if (empty($categories)) {
             return;
         }
 
-        $db->table('product_category_map') ->where('product_id', $productId) ->delete();
+        $db->table('product_category_map')->where('product_id', $productId)->delete();
 
         $categoryModel = new CategoryModel();
 
