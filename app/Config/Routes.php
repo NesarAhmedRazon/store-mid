@@ -36,6 +36,7 @@ $routes->group('api', function ($routes) {
 $routes->group('api/get', ['filter' => 'apiAuth'],function ($routes) {
     $routes->get('products/(:segment)', 'EndpointProductX::send/$1');
     $routes->get('products', 'EndpointProductX::send');
+    $routes->get('product/(:segment)', 'Product\SingleProduct::send/$1');
 
     $routes->get('categories', 'EndpointCategoryX::send');
     $routes->get('category/(:segment)', 'EndpointCategoryX::categoryBySlug/$1');

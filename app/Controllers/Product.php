@@ -42,7 +42,7 @@ class Product extends ResourceController
             // ── Upsert product ───────────────────────────────────────────
             $productData = [
                 'wc_id'          => $data['wc_id'],
-                'permalink'      => $data['permalink'],
+                'permalink'      => basename(trim($data['permalink'], '/')),
                 'title'          => $data['title'],
                 'sku'            => $data['sku'] ?? null,
                 'stock_quantity' => $data['stock_quantity'] ?? null,
@@ -200,6 +200,7 @@ class Product extends ResourceController
                 'sku',
                 'stock_status',
                 'seo',
+                'smdp_moq',
                 // Add other meta keys you want to process
             ];
 

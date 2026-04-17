@@ -1,9 +1,10 @@
 <?php
-
+// /app/Libraries/ProductFetcher.php
 namespace App\Libraries;
 
 use App\Models\CategoryModel;
 use App\Models\MediaModel;
+use App\Models\MetaModel;
 use App\Libraries\ProductSorter;
 
 class ProductFetcher
@@ -11,12 +12,14 @@ class ProductFetcher
     protected $db;
     protected $mediaModel;
     protected $categoryModel;
+    protected $metaModel;
 
     public function __construct()
     {
         $this->db = \Config\Database::connect();
         $this->mediaModel = new MediaModel();
         $this->categoryModel = new CategoryModel();
+        $this->metaModel = new MetaModel();
     }
 
     /**
@@ -28,6 +31,7 @@ class ProductFetcher
         $perPage      = $options['perPage'] ?? 20;
         $page         = $options['page'] ?? 1;
         $categorySlug = $options['categorySlug'] ?? null;
+        $includeMeta  = $options['includeMeta'] ?? ($mode === 'full');
 
         // 1. Define Fields
         if ($mode === 'minimal') {
@@ -67,12 +71,17 @@ class ProductFetcher
             $targetIds = array_column($products, 'id');
             $roles = ($mode === 'summary') ? ['thumbnail'] : ['thumbnail', 'gallery'];
             $mediaMap = $this->mediaModel->getForEntities('product', $targetIds, $roles);
-            
+
             // Apply Sorter
             $products = ProductSorter::sort($products);
         }
-
-        // 6. Transformation Loop
+        // 6. Bulk Fetch Metadata (for full mode)
+        $metadataMap = [];
+        if ($includeMeta && $mode === 'full') {
+            $targetIds = array_column($products, 'id');
+            $metadataMap = $this->metaModel->getMapBulkDecoded('product', $targetIds);
+        }
+        // 7. Transformation Loop
         $finalProducts = [];
         foreach ($products as $product) {
             // Clean Permalink
@@ -85,8 +94,12 @@ class ProductFetcher
             if ($mode !== 'minimal') {
                 $media = $mediaMap[$product['id']] ?? ['thumbnail' => null, 'gallery' => []];
                 if ($mode === 'summary') $media['gallery'] = [];
-                
+
                 $product['images'] = $this->mediaModel->getFlatImages($media, $mode);
+            }
+            // Attach Metadata (full mode only)
+            if ($includeMeta && $mode === 'full') {
+                $product['metadata'] = $metadataMap[$product['id']] ?? [];
             }
 
             // Cleanup
