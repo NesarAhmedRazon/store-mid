@@ -91,7 +91,7 @@ class EndpointProduct extends ResourceController
     if ($mode !== 'minimal') {
         $products = \App\Libraries\ProductSorter::sort($products);
     }
-error_log($mode);
+
     // 8. Final Transformation Loop
     $finalProducts = [];
     foreach ($products as $product) {

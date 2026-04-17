@@ -66,8 +66,8 @@ class EndpointCategory extends ResourceController
             $categories = $builder->get()->getResultArray();
         } else {
             $categories = $builder->limit($perPage, ($page - 1) * $perPage)
-                ->get()
-                ->getResultArray();
+                                  ->get()
+                                  ->getResultArray();
         }
 
         if (empty($categories)) {
@@ -101,82 +101,14 @@ class EndpointCategory extends ResourceController
         ]);
     }
 
-    // ------------------------------------------------------------------
-    // GET /api/get/category/:slug?mode=summary&page=1&perPage=10
-    // ------------------------------------------------------------------
-    public function categoryBySlug(string $categorySlug = null): \CodeIgniter\HTTP\ResponseInterface
-    {
-        // 1. Guard: slug required
-        if (empty($categorySlug)) {
-            return $this->respond([
-                'status'  => 'error',
-                'message' => 'Category slug is required.',
-            ], 400);
-        }
-
-        $categoryModel = new CategoryModel();
-
-        // 2. Resolve category
-        $category = $categoryModel->where('slug', $categorySlug)->first();
-
-        if (!$category) {
-            return $this->respond([
-                'status'  => 'error',
-                'message' => "Category '{$categorySlug}' not found.",
-            ], 404);
-        }
-
-        // 3. Inputs
-        $modeInput = $this->request->getVar('mode');
-        $perPage   = max(1, (int) ($this->request->getVar('perPage') ?? 10));
-        $page      = max(1, (int) ($this->request->getVar('page')    ?? 1));
-        $mode      = in_array($modeInput, ['minimal', 'summary', 'full']) ? $modeInput : 'summary';
-
-        // 4. Build permalink for this category (ancestor slugs from path)
-        $permalink = $this->buildPermalink((string) $category->path, $categoryModel);
-
-        // 5. Assemble base category response
-        $result = [
-            'id'        => (int) $category->id,
-            'name'      => $category->name,
-            'permalink' => $permalink,
-        ];
-
-        if ($mode !== 'minimal') {
-            $result['description'] = $category->description ?? '';
-        }
-
-        // 6. Products — only for summary and full modes
-        $productsData = ['page' => $page, 'perPage' => $perPage, 'total' => 0, 'items' => []];
-
-        if ($mode !== 'minimal') {
-            $productIds = $categoryModel->getProductIds((int) $category->id, includeDescendants: true);
-            $total      = count($productIds);
-
-            // Paginate the ID list in PHP — avoids a second COUNT query
-            $pagedIds = array_slice($productIds, ($page - 1) * $perPage, $perPage);
-
-            if (!empty($pagedIds)) {
-                $products = $this->fetchProductsByIds($pagedIds, $mode);
-            } else {
-                $products = [];
-            }
-
-            $productsData = [
-                'page'    => $page,
-                'perPage' => $perPage,
-                'total'   => $total,
-                'items'   => $products,
-            ];
-        }
-
-        $result['products'] = $productsData;
-
-        return $this->respond([
-            'status'   => 'ok',
-            'view'     => $mode,
-            'category' => $result,
-        ]);
+    public function categoryBySlug(string $categorySlug = null): \CodeIgniter\HTTP\ResponseInterface{
+        /**
+         * This will return category information by slug. 
+         * it will support return id,title(name),parmalink,description,products[]
+         * if mode is not minimal then only add products(summary/minimal), also need support for modes.
+         * need to return page,perPage,total.
+         * if no category provided handle with proper error respons
+         */
     }
     /**
      * Converts the numeric path (1/5/12) into a slug-based permalink
@@ -221,3 +153,4 @@ class EndpointCategory extends ResourceController
         return $categories;
     }
 }
+

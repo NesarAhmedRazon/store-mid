@@ -33,7 +33,7 @@ $routes->group('api', function ($routes) {
     
 });
 
-$routes->group('api/get', function ($routes) {
+$routes->group('api/get', ['filter' => 'apiAuth'],function ($routes) {
     $routes->get('products/(:segment)', 'EndpointProductX::send/$1');
     $routes->get('products', 'EndpointProductX::send');
 
