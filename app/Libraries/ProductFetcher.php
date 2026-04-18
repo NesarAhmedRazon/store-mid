@@ -54,16 +54,20 @@ class ProductFetcher
             }
         }
 
-        // 3. Pagination Logic
-        if (!($perPage === 'all' && $mode === 'minimal')) {
-            $limit = (int)$perPage;
-            $offset = ((int)$page - 1) * $limit;
+        // 3. True total — COUNT before applying LIMIT
+        $total = $builder->countAllResults(false);
+        if ($total === 0) return ['total' => 0, 'products' => []];
+
+        // 4. Pagination Logic — skip LIMIT entirely when perPage=all
+        if ($perPage !== 'all') {
+            $limit  = max(1, (int) $perPage);
+            $offset = (max(1, (int) $page) - 1) * $limit;
             $builder->limit($limit, $offset);
         }
 
-        // 4. Execute
+        // 5. Execute
         $products = $builder->orderBy('p.updated_at', 'DESC')->get()->getResultArray();
-        if (empty($products)) return ['total' => 0, 'products' => []];
+        if (empty($products)) return ['total' => $total, 'products' => []];
 
         // 5. Bulk Fetch Media (Summary/Full only)
         $mediaMap = [];
@@ -79,7 +83,7 @@ class ProductFetcher
         $metadataMap = [];
         if ($includeMeta && $mode === 'full') {
             $targetIds = array_column($products, 'id');
-            $metadataMap = $this->metaModel->getMapBulkDecoded('product', $targetIds);
+            $metadataMap = $this->metaModel->getMapBulk('product', $targetIds);
         }
         // 7. Transformation Loop
         $finalProducts = [];
@@ -112,7 +116,7 @@ class ProductFetcher
         }
 
         return [
-            'total'    => count($finalProducts),
+            'total'    => $total,
             'products' => $finalProducts
         ];
     }
