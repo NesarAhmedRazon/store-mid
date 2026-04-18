@@ -155,6 +155,7 @@ class MetaModel extends Model
 
     /**
      * Get the value of a single meta key, or $default if not found.
+     * JSON-encoded values are automatically decoded to array/object.
      */
     public function get(
         string  $entityType,
@@ -167,26 +168,32 @@ class MetaModel extends Model
                     ->where('slug',        $slug)
                     ->first();
 
-        return $row ? $row['value'] : $default;
+        return $row ? $this->decodeValue($row['value']) : $default;
     }
 
     /**
      * Get all meta rows for an entity (full rows with id, label, etc.).
+     * The 'value' field in every row is automatically decoded.
      *
      * @return array[]
      */
     public function getAll(string $entityType, int $entityId): array
     {
-        return $this->where('entity_type', $entityType)
-                    ->where('entity_id',   $entityId)
-                    ->orderBy('slug', 'ASC')
-                    ->findAll();
+        $rows = $this->where('entity_type', $entityType)
+                     ->where('entity_id',   $entityId)
+                     ->orderBy('slug', 'ASC')
+                     ->findAll();
+
+        foreach ($rows as &$row) {
+            $row['value'] = $this->decodeValue($row['value']);
+        }
+
+        return $rows;
     }
 
     /**
      * Get a flat [ slug => value ] map for one entity.
-     *
-     * Useful when you only need values, not labels/timestamps.
+     * JSON-encoded values are automatically decoded to array/object.
      */
     public function getMap(string $entityType, int $entityId): array
     {
@@ -195,11 +202,17 @@ class MetaModel extends Model
                      ->where('entity_id',   $entityId)
                      ->findAll();
 
-        return array_column($rows, 'value', 'slug');
+        $map = [];
+        foreach ($rows as $row) {
+            $map[$row['slug']] = $this->decodeValue($row['value']);
+        }
+
+        return $map;
     }
 
     /**
      * Bulk-read metas for many entities of the same type — ONE query.
+     * JSON-encoded values are automatically decoded to array/object.
      *
      * Returns: [ entity_id => [ slug => value ], … ]
      *
@@ -220,10 +233,43 @@ class MetaModel extends Model
 
         $result = [];
         foreach ($rows as $row) {
-            $result[(int) $row['entity_id']][$row['slug']] = $row['value'];
+            $result[(int) $row['entity_id']][$row['slug']] = $this->decodeValue($row['value']);
         }
 
         return $result;
+    }
+
+    // ── Value codec ───────────────────────────────────────────────────────
+
+    /**
+     * Decode a raw DB string value.
+     *
+     * Rules:
+     *  - null / empty string  → returned as-is
+     *  - valid JSON object {} → decoded to associative array
+     *  - valid JSON array  [] → decoded to array
+     *  - any other string     → returned as plain string (e.g. "1", "instock")
+     *
+     * We intentionally avoid decoding bare JSON scalars ("true", "123")
+     * so that numeric-looking meta values stay as strings — no surprises.
+     */
+    private function decodeValue(mixed $value): mixed
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        $trimmed = ltrim((string) $value);
+
+        // Only attempt decode when the value looks like a JSON object or array
+        if ($trimmed[0] === '{' || $trimmed[0] === '[') {
+            $decoded = json_decode($value, associative: true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return $decoded;
+            }
+        }
+
+        return $value;
     }
 
     // ── Delete ────────────────────────────────────────────────────────────
