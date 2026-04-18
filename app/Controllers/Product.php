@@ -193,7 +193,7 @@ class Product extends ResourceController
 
             // Define your allowed meta keys
             $allowedMetaKeys = [
-                // 'trd_price',
+                'trd_price',
                 'rating',
                 'total_sales',
                 'extra_documents',
