@@ -201,6 +201,7 @@ class Product extends ResourceController
                 'stock_status',
                 'seo',
                 'smdp_moq',
+                'cogs_total_value'
                 // Add other meta keys you want to process
             ];
 
