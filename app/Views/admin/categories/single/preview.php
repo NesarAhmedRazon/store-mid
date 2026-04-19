@@ -1,6 +1,6 @@
 <?php
 /**
- * views/admin/categories/single/preview.php
+ * views/products/categories/single/preview.php
  *
  * Expects:
  *   $category  — category object
@@ -25,12 +25,12 @@
 
     <!-- Breadcrumb -->
     <div class="flex items-center gap-1.5 flex-wrap min-w-0">
-        <a href="/admin/categories" class="text-[11px] font-mono text-subtle no-underline hover:text-text transition-colors">
+        <a href="/products/categories" class="text-[11px] font-mono text-subtle no-underline hover:text-text transition-colors">
             categories
         </a>
         <?php foreach ($breadcrumb as $crumb): ?>
         <span class="text-subtle text-[11px]">/</span>
-        <a href="/admin/categories/<?= $crumb->id ?>"
+        <a href="/products/categories/<?= $crumb->id ?>"
            class="text-[11px] font-mono <?= $crumb->id === $category->id ? 'text-text' : 'text-subtle' ?> no-underline hover:text-text transition-colors truncate">
             <?= esc($crumb->name) ?>
         </a>
@@ -38,7 +38,7 @@
     </div>
 
     <div class="flex items-center gap-2 shrink-0">
-        <a href="/admin/categories/<?= $category->id ?>/edit"
+        <a href="/products/categories/<?= $category->id ?>/edit"
            class="text-[11px] font-mono text-text no-underline px-2.5 py-1 border border-border-md rounded hover:bg-bg transition-colors">
             edit →
         </a>
@@ -104,7 +104,7 @@
                     <thead>
                         <tr class="border-b border-border">
                             <th class="text-left font-mono text-[10px] uppercase tracking-widest text-subtle px-4 py-2">Name</th>
-                            <th class="text-left font-mono text-[10px] uppercase tracking-widest text-subtle px-4 py-2 hidden sm:table-cell">SKU</th>
+                            <th class="text-left font-mono text-[10px] uppercase tracking-widest text-subtle px-4 py-2 hidden sm:table-cell">Permalink</th>
                             <th class="text-left font-mono text-[10px] uppercase tracking-widest text-subtle px-4 py-2">Stock</th>
                             <th class="text-right font-mono text-[10px] uppercase tracking-widest text-subtle px-4 py-2"></th>
                         </tr>
@@ -119,7 +119,7 @@
                                 </a>
                             </td>
                             <td class="px-4 py-2.5 hidden sm:table-cell">
-                                <span class="font-mono text-subtle"><?= esc($product->sku ?? '—') ?></span>
+                                <span class="font-mono text-subtle"><?= esc($product->permalink ?? "—") ?></span>
                             </td>
                             <td class="px-4 py-2.5">
                                 <span class="font-mono text-[11px] <?= $product->stock_status === 'instock' ? 'text-up' : 'text-subtle' ?>">
@@ -172,7 +172,7 @@
                     <span class="text-[11px] font-mono text-subtle">none</span>
                 <?php endif; ?>
                 <?php foreach ($children ?? [] as $child): ?>
-                <a href="/admin/categories/<?= $child->id ?>"
+                <a href="/products/categories/<?= $child->id ?>"
                    class="flex items-center gap-1.5 text-[12px] text-muted no-underline hover:text-text transition-colors">
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="shrink-0 text-subtle">
                         <path d="M2 2v4h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -180,7 +180,7 @@
                     <?= esc($child->name) ?>
                 </a>
                 <?php endforeach; ?>
-                <a href="/admin/categories/create?parent=<?= $category->id ?>"
+                <a href="/products/categories/create?parent=<?= $category->id ?>"
                    class="mt-2 text-[11px] font-mono text-subtle no-underline hover:text-text transition-colors">
                     + add sub-category
                 </a>

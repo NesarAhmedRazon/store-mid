@@ -10,10 +10,20 @@
  */
 $errors = $errors ?? [];
 ?>
+<?= $this->extend('layouts/main') ?>
+
+<?= $this->section('content') ?>
+
+<?php if (session()->getFlashdata('error')): ?>
+<div class="flex items-center gap-2.5 bg-down-bg border border-down/20 text-down text-[13px] px-4 py-3 rounded-lg mb-5">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v3.5M8 11h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    <?= esc(session()->getFlashdata('error')) ?>
+</div>
+<?php endif; ?>
 
 <!-- Action bar -->
 <div class="flex items-center justify-between mb-5">
-    <a href="/admin/categories/<?= $category->id ?>"
+    <a href="/products/categories/<?= $category->id ?>"
        class="text-[11px] font-mono text-subtle no-underline hover:text-text transition-colors">
         ← back to category
     </a>
@@ -24,11 +34,10 @@ $errors = $errors ?? [];
     </button>
 </div>
 
-<form action="/admin/categories/<?= $category->id ?>/update" method="POST" class="flex flex-col gap-4 max-w-2xl">
+<form action="/products/categories/<?= $category->id ?>/update" method="POST" class="flex flex-col gap-4 max-w-2xl">
     <?= csrf_field() ?>
-    <input type="hidden" name="_method" value="PUT">
 
-    <!-- Name + Slug -->
+    <!-- Identity -->
     <div class="card">
         <div class="card-head">
             <span class="card-title">Identity</span>
@@ -74,7 +83,7 @@ $errors = $errors ?? [];
         </div>
     </div>
 
-    <!-- Parent + Description -->
+    <!-- Hierarchy -->
     <div class="card">
         <div class="card-head">
             <span class="card-title">Hierarchy</span>
@@ -123,7 +132,7 @@ $errors = $errors ?? [];
 
     <!-- Submit -->
     <div class="flex items-center justify-end gap-2">
-        <a href="/admin/categories/<?= $category->id ?>"
+        <a href="/products/categories/<?= $category->id ?>"
            class="text-[11px] font-mono text-muted no-underline px-3 py-1.5 border border-border rounded-md hover:text-text hover:border-border-md transition-colors">
             cancel
         </a>
@@ -158,21 +167,17 @@ $errors = $errors ?? [];
 </div>
 
 <script>
-// Auto-generate slug from name — only when slug hasn't been manually edited
 (function () {
     const nameInput = document.getElementById('cat-name');
     const slugInput = document.getElementById('cat-slug');
-    let slugTouched = true; // on edit, slug is pre-filled — don't auto-overwrite
+    let slugTouched = true; // on edit slug is pre-filled — don't auto-overwrite
 
-    slugInput.addEventListener('input', function () {
-        slugTouched = true;
-    });
+    slugInput.addEventListener('input', function () { slugTouched = true; });
 
     nameInput.addEventListener('input', function () {
         if (slugTouched) return;
         slugInput.value = this.value
-            .toLowerCase()
-            .trim()
+            .toLowerCase().trim()
             .replace(/[^a-z0-9\s-]/g, '')
             .replace(/\s+/g, '-')
             .replace(/-+/g, '-');
@@ -181,7 +186,7 @@ $errors = $errors ?? [];
 
 function confirmDelete(id, name) {
     document.getElementById('delete-modal-name').textContent = name;
-    document.getElementById('delete-confirm-btn').href = '/admin/categories/' + id + '/delete';
+    document.getElementById('delete-confirm-btn').href = '/products/categories/' + id + '/delete';
     document.getElementById('delete-modal').classList.remove('hidden');
 }
 
@@ -193,3 +198,5 @@ document.getElementById('delete-modal').addEventListener('click', function (e) {
     if (e.target === this) closeModal();
 });
 </script>
+
+<?= $this->endSection() ?>

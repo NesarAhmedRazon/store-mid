@@ -14,13 +14,13 @@ $preselectedParent = (int) ($preselectedParent ?? $this->request->getGet('parent
 
 <!-- Action bar -->
 <div class="flex items-center justify-between mb-5">
-    <a href="/admin/categories"
+    <a href="/products/categories"
        class="text-[11px] font-mono text-subtle no-underline hover:text-text transition-colors">
         ← back to categories
     </a>
 </div>
 
-<form action="/admin/categories/store" method="POST" class="flex flex-col gap-4 max-w-2xl">
+<form action="/products/categories/store" method="POST" class="flex flex-col gap-4 max-w-2xl">
     <?= csrf_field() ?>
 
     <!-- Name + Slug -->
@@ -105,7 +105,7 @@ $preselectedParent = (int) ($preselectedParent ?? $this->request->getGet('parent
 
     <!-- Submit -->
     <div class="flex items-center justify-end gap-2">
-        <a href="/admin/categories"
+        <a href="/products/categories"
            class="text-[11px] font-mono text-muted no-underline px-3 py-1.5 border border-border rounded-md hover:text-text hover:border-border-md transition-colors">
             cancel
         </a>

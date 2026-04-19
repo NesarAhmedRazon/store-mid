@@ -16,6 +16,7 @@ class CategoryModel extends Model
         'name',
         'slug',
         'description',
+        'product_count',
         'path',
         'depth',
         'thumb_id',
@@ -82,6 +83,44 @@ class CategoryModel extends Model
         return true;
     }
 
+    /**
+     * Upsert from a recursive import payload.
+     *
+     * Differs from upsertFromWc() in one way: accepts '_parent_internal_id'
+     * (the already-resolved internal DB id) instead of 'wc_parent_id'.
+     * This avoids a redundant lookup since the controller already knows the
+     * internal id from the previous recursion level.
+     *
+     * Returns the internal id of the upserted category.
+     */
+    public function upsertFromWcRecursive(array $data): int
+    {
+        $existing = $this->where('wc_id', (int) $data['wc_id'])->first();
+
+        $parentInternalId = $data['_parent_internal_id'] ?? null;
+
+        $payload = [
+            'wc_id'       => (int) $data['wc_id'],
+            'name'        => html_entity_decode($data['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+            'slug'        => $data['slug'],
+            'description' => !empty($data['description'])
+                ? html_entity_decode($data['description'], ENT_QUOTES | ENT_HTML5, 'UTF-8')
+                : null,
+            'parent_id'   => $parentInternalId,
+        ];
+
+        if ($existing) {
+            // Repair hierarchy if parent changed
+            if ((int) ($existing->parent_id ?? 0) !== (int) ($parentInternalId ?? 0)) {
+                $this->moveTo($existing->id, $parentInternalId);
+            }
+            $this->update($existing->id, $payload);
+            return $existing->id;
+        }
+
+        return $this->insertWithPath($payload);
+    }
+
     // ── Hierarchy queries ────────────────────────────────────────────────
 
     public function getDescendants(int $id): array
@@ -92,17 +131,17 @@ class CategoryModel extends Model
         }
 
         return $this->where('path !=', $category->path)
-                    ->like('path', $category->path . '/', 'after')
-                    ->orderBy('path', 'ASC')
-                    ->findAll();
+            ->like('path', $category->path . '/', 'after')
+            ->orderBy('path', 'ASC')
+            ->findAll();
     }
 
     public function getChildren(int $parentId): array
     {
         return $this->where('parent_id', $parentId)
-                    ->orderBy('sort_order', 'ASC')
-                    ->orderBy('name', 'ASC')
-                    ->findAll();
+            ->orderBy('sort_order', 'ASC')
+            ->orderBy('name', 'ASC')
+            ->findAll();
     }
 
     public function getAncestors(int $id): array
@@ -124,11 +163,11 @@ class CategoryModel extends Model
         $ids = implode(',', array_map('intval', $ancestorIds));
 
         return $this->db
-                    ->table($this->table)
-                    ->whereIn('id', $ancestorIds)
-                    ->orderBy("FIELD(id, {$ids})")
-                    ->get()
-                    ->getResult();
+            ->table($this->table)
+            ->whereIn('id', $ancestorIds)
+            ->orderBy("FIELD(id, {$ids})")
+            ->get()
+            ->getResult();
     }
 
     public function getBreadcrumb(int $id): array
@@ -149,9 +188,9 @@ class CategoryModel extends Model
     public function getRoots(): array
     {
         return $this->where('depth', 0)
-                    ->orderBy('sort_order', 'ASC')
-                    ->orderBy('name', 'ASC')
-                    ->findAll();
+            ->orderBy('sort_order', 'ASC')
+            ->orderBy('name', 'ASC')
+            ->findAll();
     }
 
     // ── Product linkage ──────────────────────────────────────────────────
@@ -159,13 +198,13 @@ class CategoryModel extends Model
     public function getByProduct(int $productId): array
     {
         return $this->db->table('product_category_map pcm')
-                        ->select('pc.*, pcm.is_primary')
-                        ->join('product_categories pc', 'pc.id = pcm.category_id')
-                        ->where('pcm.product_id', $productId)
-                        ->orderBy('pcm.is_primary', 'DESC')
-                        ->orderBy('pc.path', 'ASC')
-                        ->get()
-                        ->getResult();
+            ->select('pc.*, pcm.is_primary')
+            ->join('product_categories pc', 'pc.id = pcm.category_id')
+            ->where('pcm.product_id', $productId)
+            ->orderBy('pcm.is_primary', 'DESC')
+            ->orderBy('pc.path', 'ASC')
+            ->get()
+            ->getResult();
     }
 
     public function getProductIds(int $categoryId, bool $includeDescendants = true): array
@@ -185,11 +224,11 @@ class CategoryModel extends Model
         }
 
         $rows = $this->db->table('product_category_map')
-                         ->select('product_id')
-                         ->whereIn('category_id', $catIds)
-                         ->distinct()
-                         ->get()
-                         ->getResultArray();
+            ->select('product_id')
+            ->whereIn('category_id', $catIds)
+            ->distinct()
+            ->get()
+            ->getResultArray();
 
         return array_column($rows, 'product_id');
     }
@@ -204,10 +243,10 @@ class CategoryModel extends Model
     public function getProductCountsAll(): array
     {
         $rows = $this->db->table('product_category_map')
-                         ->select('category_id, COUNT(DISTINCT product_id) as count')
-                         ->groupBy('category_id')
-                         ->get()
-                         ->getResultArray();
+            ->select('category_id, COUNT(DISTINCT product_id) as count')
+            ->groupBy('category_id')
+            ->get()
+            ->getResultArray();
 
         $counts = [];
         foreach ($rows as $row) {
@@ -232,11 +271,14 @@ class CategoryModel extends Model
         }
 
         $payload = [
-            'wc_id'       => (int) $data['wc_id'],
-            'name'        => $data['name'],
-            'slug'        => $data['slug'],
-            'description' => $data['description'] ?? null,
-            'parent_id'   => $parentId,
+            'wc_id'         => (int) $data['wc_id'],
+            'name'          => html_entity_decode($data['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+            'slug'          => $data['slug'],
+            'description'   => !empty($data['description'])
+                ? html_entity_decode($data['description'], ENT_QUOTES | ENT_HTML5, 'UTF-8')
+                : null,
+            'product_count' => (int) ($data['product_count'] ?? 0),
+            'parent_id'     => $parentId,
         ];
 
         if ($existing) {
