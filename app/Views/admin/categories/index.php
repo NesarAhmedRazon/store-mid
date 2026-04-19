@@ -21,6 +21,8 @@
     </div>
 <?php endif;
 // usort($categories, fn($a, $b) => strcmp($a->path, $b->path));
+
+
 ?>
 <!-- Action bar -->
 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
@@ -132,7 +134,7 @@
         </div>
     </div>
 </div>
-<?= $this->endSection() ?>
+
 <script>
     // ── Search ───────────────────────────────────────────────────────────────
     document.getElementById('cat-search').addEventListener('input', function() {
@@ -159,4 +161,4 @@
     document.getElementById('delete-modal').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
-</script>
+</script><?= $this->endSection() ?>

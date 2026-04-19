@@ -5,6 +5,7 @@ namespace App\Controllers\Product;
 use App\Models\CategoryModel;
 use App\Models\ProductModel;
 use App\Controllers\BaseController;
+use CodeIgniter\RESTful\ResourceController;
 
 class CategoryController extends BaseController
 {
@@ -35,6 +36,7 @@ class CategoryController extends BaseController
         ]);
     }
 
+    
     // ── Preview ──────────────────────────────────────────────────────────
 
     public function preview(int $id)

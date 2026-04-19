@@ -56,6 +56,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         // Product Categories
         $routes->group('categories', ['filter' => 'auth'], function ($routes) {
             $routes->get('/',              'Product\CategoryController::index');
+            $routes->get('ss',              'Product\AllCats::send');
             $routes->get('(:num)',         'Product\CategoryController::preview/$1');
             $routes->get('create',         'Product\CategoryController::create');
             $routes->post('store',         'Product\CategoryController::store');
