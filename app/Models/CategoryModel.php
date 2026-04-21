@@ -16,7 +16,6 @@ class CategoryModel extends Model
         'name',
         'slug',
         'description',
-        'product_count',
         'path',
         'depth',
         'thumb_id',
@@ -277,7 +276,6 @@ class CategoryModel extends Model
             'description'   => !empty($data['description'])
                 ? html_entity_decode($data['description'], ENT_QUOTES | ENT_HTML5, 'UTF-8')
                 : null,
-            'product_count' => (int) ($data['product_count'] ?? 0),
             'parent_id'     => $parentId,
         ];
 
