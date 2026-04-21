@@ -8,3 +8,5 @@ writable/*/*.txt
 writable/session/ci_s*
 node_modules/
 *_modules/
+writable/*/*.json
+CI4_*.zip 
