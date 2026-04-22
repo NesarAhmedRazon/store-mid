@@ -72,7 +72,7 @@ class AllProducts extends ResourceController
                 'message' => 'An error occurred while fetching products.',
             ], 500);
         }
-log_message('info','AllProducts: '.print_r($result,true));
+
         // ------------------------------------------------------------------
         // 3. Respond
         // ------------------------------------------------------------------

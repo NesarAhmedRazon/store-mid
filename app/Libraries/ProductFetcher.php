@@ -47,7 +47,7 @@ class ProductFetcher
             $select = 'p.id, p.title, p.permalink, p.updated_at';
         } elseif ($mode === 'summary') {
             // regular_price + sale_price come from the products table directly
-            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status,p.stock_quantity, p.regular_price, p.sale_price';
+            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status,p.stock_quantity, p.stock_unit, p.regular_price, p.sale_price';
         } else {
             $select = 'p.*';
         }
@@ -109,7 +109,7 @@ class ProductFetcher
             if ($mode === 'summary') {
                 $summaryAttr = $this->bulkGetNamedAttributes(
                     $targetIds,
-                    [self::ATTR_BRAND, self::ATTR_LCSC,self::ATTR_PKG,self::ATTR_MFR]
+                    [self::ATTR_BRAND, self::ATTR_LCSC, self::ATTR_PKG, self::ATTR_MFR]
                 );
 
                 // docs from meta — extra_documents key only
@@ -140,22 +140,29 @@ class ProductFetcher
                 if ($mode === 'summary') $media['gallery'] = [];
                 $product['images'] = $this->mediaModel->getFlatImages($media, $mode);
             }
-            
+
             // Summary extras
             if ($mode === 'summary') {
-                error_log('we are in product fetch '.$categorySlug);
+                error_log('we are in product fetch ' . $categorySlug);
                 $attrs = $summaryAttr[$pid] ?? [];
 
                 $product['brand']   = $attrs[self::ATTR_BRAND] ?? null;
-                $product['mfr']     = $attrs[self::ATTR_MFR] ?? null;                
+                $product['mfr']     = $attrs[self::ATTR_MFR] ?? null;
                 $product['package'] = $attrs[self::ATTR_PKG] ?? null;
                 $product['price']   = $product['sale_price'] ? (float)$product['regular_price'] : (float)$product['regular_price'];
                 $product['lcscId']  = $attrs[self::ATTR_LCSC]  ?? null;
                 $product['docs']    = $docsMap[$pid]           ?? null;
+                $product['stock'] = [
+                    'unit'     => $product['stock_unit']    ?? null,
+                    'status'   => $product['stock_status']  ?? null,
+                    'quantity' => (float) $product['stock_quantity'] ?? null
+                ];
 
                 // remove the raw sale_price key — exposed as salePrice above
                 unset($product['sale_price']);
+                unset($product['stock_unit'], $product['stock_status'], $product['stock_quantity']);
             }
+
 
             // Full metadata
             if ($includeMeta && $mode === 'full') {
