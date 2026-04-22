@@ -16,6 +16,7 @@ class ProductModel extends Model
         'title',
         'sku',
         'stock_quantity',
+        'stock_unit',
         'stock_status',
         'sale_price',
         'regular_price',

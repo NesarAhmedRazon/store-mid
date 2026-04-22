@@ -37,6 +37,12 @@ class CreateProductsTable extends Migration
                 'null'    => true,
                 'default' => null,
             ],
+            'stock_unit' => [
+                'type'    => 'VARCHAR',
+                'constraint' => 100,
+                'null'    => true,
+                'default' => null,
+            ],
             'stock_status' => [
                 'type'       => 'ENUM',
                 'constraint' => ['instock', 'outofstock', 'onbackorder'],

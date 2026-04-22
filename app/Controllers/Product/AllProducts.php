@@ -43,7 +43,7 @@ class AllProducts extends ResourceController
         $category    = $this->request->getGet('category') ?? null;
 
         $mode = in_array($modeInput, ['minimal', 'summary', 'full']) ? $modeInput : 'full';
-
+        
         // perPage: accept integer or the string "all"
         $isAll   = ($perPageInput === 'all');
         $perPage = $isAll ? 'all' : max(1, (int) $perPageInput);
@@ -72,7 +72,7 @@ class AllProducts extends ResourceController
                 'message' => 'An error occurred while fetching products.',
             ], 500);
         }
-
+log_message('info','AllProducts: '.print_r($result,true));
         // ------------------------------------------------------------------
         // 3. Respond
         // ------------------------------------------------------------------
