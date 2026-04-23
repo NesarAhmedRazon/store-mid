@@ -141,9 +141,11 @@ class ProductFetcher
                 $product['images'] = $this->mediaModel->getFlatImages($media, $mode);
             }
 
+
+
             // Summary extras
             if ($mode === 'summary') {
-                error_log('we are in product fetch ' . $categorySlug);
+
                 $attrs = $summaryAttr[$pid] ?? [];
 
                 $product['brand']   = $attrs[self::ATTR_BRAND] ?? null;
@@ -151,18 +153,23 @@ class ProductFetcher
                 $product['package'] = $attrs[self::ATTR_PKG] ?? null;
                 $product['price']   = $product['sale_price'] ? (float)$product['regular_price'] : (float)$product['regular_price'];
                 $product['lcscId']  = $attrs[self::ATTR_LCSC]  ?? null;
-                $product['docs']    = $docsMap[$pid]           ?? null;
-                $product['stock'] = [
-                    'unit'     => $product['stock_unit']    ?? null,
-                    'status'   => $product['stock_status']  ?? null,
-                    'quantity' => (float) $product['stock_quantity'] ?? null
-                ];
 
                 // remove the raw sale_price key — exposed as salePrice above
                 unset($product['sale_price']);
                 unset($product['stock_unit'], $product['stock_status'], $product['stock_quantity']);
             }
 
+            // stock
+            error_log('not Minimal');
+            if ($mode !== 'minimal') {
+
+                $product['docs']    = $docsMap[$pid] ?? null;
+                $product['stock'] = [
+                    'unit'     => $product['stock_unit']    ?? null,
+                    'status'   => $product['stock_status']  ?? null,
+                    'quantity' => (float) $product['stock_quantity'] ?? null
+                ];
+            }
 
             // Full metadata
             if ($includeMeta && $mode === 'full') {

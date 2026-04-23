@@ -104,6 +104,7 @@ class SingleProduct extends ResourceController
 
         // ── Attributes (summary + full) ───────────────────────────────────
         if ($mode !== 'minimal') {
+             error_log('not Minimal');
             $product['attributes'] = $this->fetchAttributes($db, $productId);
         }
 
