@@ -10,17 +10,15 @@
  *                        (handles both full-URL and path-only storage formats)
  *
  * Query params:
- *   mode=minimal  → title, permalink, stock_status, regular_price, sale_price
- *   mode=summary  → above + thumbnail image, categories (names only)
- *   mode=full     → above + gallery, all attributes, meta, category permalinks  (default)
+ *   mode=minimal  → title, permalink, updated_at
+ *   mode=summary  → above + thumbnail, brand, mfr, package, price, lcscId, stock, docs
+ *   mode=full     → above + gallery, all meta data
  */
 
 namespace App\Controllers\Product;
 
 use CodeIgniter\RESTful\ResourceController;
-use App\Models\MediaModel;
-use App\Models\CategoryModel;
-use App\Models\MetaModel;
+use App\Libraries\ProductFetcher;
 
 class SingleProduct extends ResourceController
 {
@@ -41,28 +39,49 @@ class SingleProduct extends ResourceController
         }
 
         // ------------------------------------------------------------------
-        // 2. Mode
+        // 2. Get mode parameter
         // ------------------------------------------------------------------
         $modeInput = $this->request->getGet('mode') ?? 'full';
         $mode      = in_array($modeInput, ['minimal', 'summary', 'full']) ? $modeInput : 'full';
+        $includeMeta = ($mode === 'full');
 
         // ------------------------------------------------------------------
-        // 3. Resolve product row
+        // 3. Resolve product ID from identifier
         // ------------------------------------------------------------------
         $db = \Config\Database::connect();
-
-        $builder = $db->table('products p')->select('p.*');
+        $productId = null;
 
         if (is_numeric($identifier)) {
-            // Numeric → direct PK lookup
-            $builder->where('p.id', (int) $identifier);
+            // Numeric → direct ID
+            $productId = (int) $identifier;
         } else {
-            // Slug → match the last segment of the stored permalink.
-            // Handles both "https://store.com/product/resistor-10k" and "/product/resistor-10k".
-            $builder->where("SUBSTRING_INDEX(p.permalink, '/', -1)", $identifier);
+            // Slug → find product by permalink last segment
+            $builder = $db->table('products p')
+                ->select('p.id')
+                ->where("SUBSTRING_INDEX(p.permalink, '/', -1)", $identifier);
+            
+            $result = $builder->get()->getRowArray();
+            
+            if ($result) {
+                $productId = (int) $result['id'];
+            }
         }
 
-        $product = $builder->get()->getRowArray();
+        if (!$productId) {
+            return $this->respond([
+                'status'  => 'error',
+                'message' => "Product '{$identifier}' not found.",
+            ], 404);
+        }
+
+        // ------------------------------------------------------------------
+        // 4. Fetch product using ProductFetcher library
+        // ------------------------------------------------------------------
+        $productFetcher = new ProductFetcher();
+        $product = $productFetcher->getProduct($productId, [
+            'mode'        => $mode,
+            'includeMeta' => $includeMeta,
+        ]);
 
         if (!$product) {
             return $this->respond([
@@ -71,64 +90,23 @@ class SingleProduct extends ResourceController
             ], 404);
         }
 
-        $productId = (int) $product['id'];
-
         // ------------------------------------------------------------------
-        // 4. Clean permalink  (mirrors ProductFetcher / EndpointProduct logic)
-        //    "https://store.com/product/resistor-10k" → "resistor-10k"
-        //    "/product/resistor-10k"                  → "resistor-10k"
+        // 5. Add categories to the response
+        //    (ProductFetcher doesn't include categories by default)
         // ------------------------------------------------------------------
-        if (!empty($product['permalink'])) {
-            $clean               = preg_replace('/^\/?(product|products)\//', '', parse_url($product['permalink'], PHP_URL_PATH) ?? $product['permalink']);
-            $product['permalink'] = trim($clean, '/');
-        }
-
-        // ------------------------------------------------------------------
-        // 5. Attach data by mode
-        // ------------------------------------------------------------------
-        $mediaModel    = new MediaModel();
-        $categoryModel = new CategoryModel();
-
-        // ── Images ───────────────────────────────────────────────────────
-        if ($mode === 'minimal') {
-            // No images for minimal
-        } elseif ($mode === 'summary') {
-            $media               = $mediaModel->getForEntity('product', $productId);
-            $media['gallery']    = []; // thumbnail only in summary
-            $product['images']   = $mediaModel->getFlatImages($media, $mode);
-        } else {
-            // full — thumbnail + gallery
-            $media               = $mediaModel->getForEntity('product', $productId);
-            $product['images']   = $mediaModel->getFlatImages($media, $mode);
-        }
-
-        // ── Attributes (summary + full) ───────────────────────────────────
         if ($mode !== 'minimal') {
-             error_log('not Minimal');
-            $product['attributes'] = $this->fetchAttributes($db, $productId);
-        }
-
-        // ── Categories ────────────────────────────────────────────────────
-        if ($mode !== 'minimal') {
+            $categoryModel = new \App\Models\CategoryModel();
             $rawCategories = $categoryModel->getByProduct($productId);
             $product['categories'] = $this->formatCategories($rawCategories, $mode, $categoryModel);
         }
 
-        // ── Meta (full only) ─────────────────────────────────────────────
-        if ($mode === 'full') {
-            $metaModel        = new MetaModel();
-            $product['meta']  = $metaModel->getMap(MetaModel::ENTITY_PRODUCT, $productId);
-        }
-
         // ------------------------------------------------------------------
-        // 6. Cleanup — strip internal / WC-only fields
+        // 6. Add attributes to the response (for summary and full modes)
+        //    (ProductFetcher doesn't include raw attributes by default)
         // ------------------------------------------------------------------
-        foreach (array_keys($product) as $key) {
-            if (strpos($key, 'wc_') === 0) {
-                unset($product[$key]);
-            }
+        if ($mode !== 'minimal') {
+            $product['attributes'] = $this->fetchAttributes($db, $productId);
         }
-        unset($product['id'], $product['thumb_id'], $product['cost']);
 
         // ------------------------------------------------------------------
         // 7. Respond
@@ -171,7 +149,7 @@ class SingleProduct extends ResourceController
      * summary → [ ['name' => 'Resistors', 'slug' => 'resistors', 'is_primary' => true], … ]
      * full    → above + 'permalink' built from materialized path slugs
      */
-    private function formatCategories(array $rawCategories, string $mode, CategoryModel $categoryModel): array
+    private function formatCategories(array $rawCategories, string $mode, \App\Models\CategoryModel $categoryModel): array
     {
         if (empty($rawCategories)) {
             return [];

@@ -24,13 +24,13 @@ class ProductFetcher
 
     // ── Summary extra fields ──────────────────────────────────────────────
     // Attribute names as stored in product_attributes.name (from WC)
-    private const ATTR_BRAND    = 'brand';       // → brand
-    private const ATTR_MFR      = 'manufacturer-part-number';       // → mfr
-    private const ATTR_PKG      = 'package-size';       // → package/size
-    private const ATTR_LCSC     = 'easyeda-id';  // → lcscId
+    private const ATTR_BRAND    = 'brand';                       // → brand
+    private const ATTR_MFR      = 'manufacturer-part-number';    // → mfr
+    private const ATTR_PKG      = 'package-size';                // → package/size
+    private const ATTR_LCSC     = 'easyeda-id';                  // → lcscId
 
     /**
-     * Centralized logic to fetch and format products
+     * Get multiple products with pagination
      */
     public function getProducts(array $options = []): array
     {
@@ -39,6 +39,8 @@ class ProductFetcher
         $page         = $options['page'] ?? 1;
         $categorySlug = $options['categorySlug'] ?? null;
         $includeMeta  = $options['includeMeta'] ?? ($mode === 'full');
+        $sortDirection = $options['sortDirection'] ?? 'newest-first';
+        $filterZeroPrice = $options['filterZeroPrice'] ?? true;
 
         // ------------------------------------------------------------------
         // 1. Define Fields
@@ -46,8 +48,7 @@ class ProductFetcher
         if ($mode === 'minimal') {
             $select = 'p.id, p.title, p.permalink, p.updated_at';
         } elseif ($mode === 'summary') {
-            // regular_price + sale_price come from the products table directly
-            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status,p.stock_quantity, p.stock_unit, p.regular_price, p.sale_price';
+            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status, p.stock_quantity, p.stock_unit, p.regular_price, p.sale_price';
         } else {
             $select = 'p.*';
         }
@@ -73,7 +74,7 @@ class ProductFetcher
         if ($total === 0) return ['total' => 0, 'products' => []];
 
         // ------------------------------------------------------------------
-        // 4. Pagination — skip LIMIT entirely when perPage=all
+        // 4. Pagination
         // ------------------------------------------------------------------
         if ($perPage !== 'all') {
             $limit  = max(1, (int) $perPage);
@@ -90,99 +91,27 @@ class ProductFetcher
         $targetIds = array_column($products, 'id');
 
         // ------------------------------------------------------------------
-        // 6. Bulk side-loads (one query each, never N+1)
+        // 6. Bulk side-loads
         // ------------------------------------------------------------------
-        $mediaMap    = [];
-        $summaryAttr = [];   // [ product_id => [ 'mfr' => '...', 'lcscId' => '...' ] ]
-        $metadataMap = [];
-        $docsMap     = [];   // [ product_id => decoded extra_documents value ]
-
-        if ($mode !== 'minimal') {
-            // Media
-            $roles    = ($mode === 'summary') ? ['thumbnail'] : ['thumbnail', 'gallery'];
-            $mediaMap = $this->mediaModel->getForEntities('product', $targetIds, $roles);
-
-            // Sort
-            $products = ProductSorter::sort($products);
-
-            // Summary extra: mfr (brand) + lcscId (easyeda-id) — one JOIN query
-            if ($mode === 'summary') {
-                $summaryAttr = $this->bulkGetNamedAttributes(
-                    $targetIds,
-                    [self::ATTR_BRAND, self::ATTR_LCSC, self::ATTR_PKG, self::ATTR_MFR]
-                );
-
-                // docs from meta — extra_documents key only
-                $docsMap = $this->bulkGetMetaKey($targetIds, 'extra_documents');
-            }
-        }
-
-        if ($includeMeta && $mode === 'full') {
-            $metadataMap = $this->metaModel->getMapBulk('product', $targetIds);
-        }
+        $sideLoads = $this->loadSideData($targetIds, $mode);
 
         // ------------------------------------------------------------------
-        // 7. Transformation loop
+        // 7. Sort products using ProductSorter (BEFORE transformation)
+        // ------------------------------------------------------------------
+        $products = ProductSorter::sort($products, $filterZeroPrice, $sortDirection);
+
+        // Re-extract IDs after sorting (in case order changed or items were filtered)
+        $targetIds = array_column($products, 'id');
+
+        // Reorganize side-loads to match the sorted/filtered product list
+        $sideLoads = $this->reorganizeSideLoads($sideLoads, $targetIds);
+
+        // ------------------------------------------------------------------
+        // 8. Transform each product using shared method
         // ------------------------------------------------------------------
         $finalProducts = [];
         foreach ($products as $product) {
-            $pid = $product['id'];
-
-            // Clean permalink
-            if (!empty($product['permalink'])) {
-                $cleanPath           = preg_replace('/^\/?(product|products)\/?/', '', $product['permalink']);
-                $product['permalink'] = trim($cleanPath, '/');
-            }
-
-            // Images
-            if ($mode !== 'minimal') {
-                $media = $mediaMap[$pid] ?? ['thumbnail' => null, 'gallery' => []];
-                if ($mode === 'summary') $media['gallery'] = [];
-                $product['images'] = $this->mediaModel->getFlatImages($media, $mode);
-            }
-
-
-
-            // Summary extras
-            if ($mode === 'summary') {
-
-                $attrs = $summaryAttr[$pid] ?? [];
-
-                $product['brand']   = $attrs[self::ATTR_BRAND] ?? null;
-                $product['mfr']     = $attrs[self::ATTR_MFR] ?? null;
-                $product['package'] = $attrs[self::ATTR_PKG] ?? null;
-                $product['price']   = $product['sale_price'] ? (float)$product['regular_price'] : (float)$product['regular_price'];
-                $product['lcscId']  = $attrs[self::ATTR_LCSC]  ?? null;
-
-                // remove the raw sale_price key — exposed as salePrice above
-                unset($product['sale_price']);
-                unset($product['stock_unit'], $product['stock_status'], $product['stock_quantity']);
-            }
-
-            // stock
-            error_log('not Minimal');
-            if ($mode !== 'minimal') {
-
-                $product['docs']    = $docsMap[$pid] ?? null;
-                $product['stock'] = [
-                    'unit'     => $product['stock_unit']    ?? null,
-                    'status'   => $product['stock_status']  ?? null,
-                    'quantity' => (float) $product['stock_quantity'] ?? null
-                ];
-            }
-
-            // Full metadata
-            if ($includeMeta && $mode === 'full') {
-                $product['metadata'] = $metadataMap[$pid] ?? [];
-            }
-
-            // Strip internal fields
-            foreach (array_keys($product) as $key) {
-                if (strpos($key, 'wc_') === 0) unset($product[$key]);
-            }
-            unset($product['id'], $product['thumb_id']);
-
-            $finalProducts[] = $product;
+            $finalProducts[] = $this->transformProduct($product, $sideLoads, $mode, $includeMeta);
         }
 
         return [
@@ -191,17 +120,195 @@ class ProductFetcher
         ];
     }
 
+    /**
+     * Get a single product by ID
+     */
+    public function getProduct(int $productId, array $options = []): ?array
+    {
+        $mode        = $options['mode'] ?? 'full';
+        $includeMeta = $options['includeMeta'] ?? ($mode === 'full');
+
+        // ------------------------------------------------------------------
+        // 1. Fetch the product
+        // ------------------------------------------------------------------
+        if ($mode === 'minimal') {
+            $select = 'p.id, p.title, p.permalink, p.updated_at';
+        } elseif ($mode === 'summary') {
+            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status, p.stock_quantity, p.stock_unit, p.regular_price, p.sale_price';
+        } else {
+            $select = 'p.*';
+        }
+
+        $product = $this->db->table('products p')
+            ->select($select)
+            ->where('p.id', $productId)
+            ->get()
+            ->getRowArray();
+
+        if (!$product) return null;
+
+        // ------------------------------------------------------------------
+        // 2. Load side data for this single product
+        // ------------------------------------------------------------------
+        $sideLoads = $this->loadSideData([$productId], $mode);
+
+        // ------------------------------------------------------------------
+        // 3. Transform using shared method
+        // ------------------------------------------------------------------
+        return $this->transformProduct($product, $sideLoads, $mode, $includeMeta);
+    }
+
+    /**
+     * Reorganize side-loads to only include products that survived sorting/filtering
+     */
+    private function reorganizeSideLoads(array $sideLoads, array $targetIds): array
+    {
+        $reorganized = [
+            'mediaMap'    => [],
+            'summaryAttr' => [],
+            'docsMap'     => [],
+            'metadataMap' => [],
+        ];
+
+        foreach ($targetIds as $id) {
+            if (isset($sideLoads['mediaMap'][$id])) {
+                $reorganized['mediaMap'][$id] = $sideLoads['mediaMap'][$id];
+            }
+            if (isset($sideLoads['summaryAttr'][$id])) {
+                $reorganized['summaryAttr'][$id] = $sideLoads['summaryAttr'][$id];
+            }
+            if (isset($sideLoads['docsMap'][$id])) {
+                $reorganized['docsMap'][$id] = $sideLoads['docsMap'][$id];
+            }
+            if (isset($sideLoads['metadataMap'][$id])) {
+                $reorganized['metadataMap'][$id] = $sideLoads['metadataMap'][$id];
+            }
+        }
+
+        return $reorganized;
+    }
+
+    /**
+     * Load all side data needed for product transformation (media, attributes, meta, docs)
+     */
+    private function loadSideData(array $productIds, string $mode): array
+    {
+        $sideLoads = [
+            'mediaMap'    => [],
+            'summaryAttr' => [],
+            'docsMap'     => [],
+            'metadataMap' => [],
+        ];
+
+        if (empty($productIds)) {
+            return $sideLoads;
+        }
+
+        if ($mode === 'minimal') {
+            return $sideLoads;
+        }
+
+        // Media
+        $roles = ($mode === 'summary') ? ['thumbnail'] : ['thumbnail', 'gallery'];
+        $sideLoads['mediaMap'] = $this->mediaModel->getForEntities('product', $productIds, $roles);
+
+        // Summary extra attributes
+        if ($mode === 'summary') {
+            $sideLoads['summaryAttr'] = $this->bulkGetNamedAttributes(
+                $productIds,
+                [self::ATTR_BRAND, self::ATTR_LCSC, self::ATTR_PKG, self::ATTR_MFR]
+            );
+            $sideLoads['docsMap'] = $this->bulkGetMetaKey($productIds, 'extra_documents');
+        }
+
+        // Full metadata
+        if ($mode === 'full') {
+            $sideLoads['metadataMap'] = $this->metaModel->getMapBulk('product', $productIds);
+        }
+
+        return $sideLoads;
+    }
+
+    /**
+     * Transform a single product record into the standardized output format
+     * This is the SINGLE SOURCE OF TRUTH for product data structure
+     */
+    private function transformProduct(array $product, array $sideLoads, string $mode, bool $includeMeta): array
+    {
+        $pid = $product['id'];
+
+        // ------------------------------------------------------------------
+        // Clean permalink
+        // ------------------------------------------------------------------
+        if (!empty($product['permalink'])) {
+            $cleanPath = preg_replace('/^\/?(product|products)\/?/', '', $product['permalink']);
+            $product['permalink'] = trim($cleanPath, '/');
+        }
+
+        // ------------------------------------------------------------------
+        // Images
+        // ------------------------------------------------------------------
+        if ($mode !== 'minimal') {
+            $media = $sideLoads['mediaMap'][$pid] ?? ['thumbnail' => null, 'gallery' => []];
+            if ($mode === 'summary') $media['gallery'] = [];
+            $product['images'] = $this->mediaModel->getFlatImages($media, $mode);
+        }
+
+        // ------------------------------------------------------------------
+        // Summary extras (brand, mfr, package, price, lcscId)
+        // ------------------------------------------------------------------
+        if ($mode === 'summary') {
+            $attrs = $sideLoads['summaryAttr'][$pid] ?? [];
+
+            $product['brand']   = $attrs[self::ATTR_BRAND] ?? null;
+            $product['mfr']     = $attrs[self::ATTR_MFR] ?? null;
+            $product['package'] = $attrs[self::ATTR_PKG] ?? null;
+            $product['price']   = isset($product['sale_price']) && $product['sale_price']
+                ? (float) $product['sale_price']
+                : (float) ($product['regular_price'] ?? 0);
+            $product['lcscId']  = $attrs[self::ATTR_LCSC] ?? null;
+
+            // Remove raw price fields
+            unset($product['sale_price'], $product['regular_price']);
+        }
+
+        // ------------------------------------------------------------------
+        // Stock information (for all non-minimal modes)
+        // ------------------------------------------------------------------
+        if ($mode !== 'minimal') {
+            $product['docs'] = $sideLoads['docsMap'][$pid] ?? null;
+            $product['stock'] = [
+                'unit'     => $product['stock_unit']    ?? null,
+                'status'   => $product['stock_status']  ?? null,
+                'quantity' => isset($product['stock_quantity']) ? (float) $product['stock_quantity'] : null,
+            ];
+
+            // Remove raw stock fields to avoid duplication
+            unset($product['stock_unit'], $product['stock_status'], $product['stock_quantity']);
+        }
+
+        // ------------------------------------------------------------------
+        // Full metadata
+        // ------------------------------------------------------------------
+        if ($includeMeta && $mode === 'full') {
+            $product['metadata'] = $sideLoads['metadataMap'][$pid] ?? [];
+        }
+
+        // ------------------------------------------------------------------
+        // Strip internal fields
+        // ------------------------------------------------------------------
+        foreach (array_keys($product) as $key) {
+            if (strpos($key, 'wc_') === 0) unset($product[$key]);
+        }
+        unset($product['id'], $product['thumb_id']);
+
+        return $product;
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────
 
     /**
      * Bulk-fetch specific named attributes for a set of product IDs.
-     * Returns: [ product_id => [ attribute_name => first_value ] ]
-     *
-     * Uses a single JOIN query regardless of how many products or attribute
-     * names are requested — no N+1.
-     *
-     * @param int[]    $productIds
-     * @param string[] $attributeNames  Exact values of product_attributes.name
      */
     private function bulkGetNamedAttributes(array $productIds, array $attributeNames): array
     {
@@ -216,7 +323,6 @@ class ProductFetcher
             ->get()
             ->getResultArray();
 
-        // Build map — keep first value per (product, attribute) pair
         $map = [];
         foreach ($rows as $row) {
             $pid  = (int) $row['product_id'];
@@ -231,13 +337,6 @@ class ProductFetcher
 
     /**
      * Bulk-fetch a single meta key for a set of product IDs.
-     * Returns: [ product_id => decoded_value ]
-     *
-     * Delegates to MetaModel::getMapBulk() which already decodes JSON values,
-     * then extracts only the requested key.
-     *
-     * @param int[]  $productIds
-     * @param string $metaKey
      */
     private function bulkGetMetaKey(array $productIds, string $metaKey): array
     {
@@ -254,12 +353,11 @@ class ProductFetcher
         $map = [];
         foreach ($rows as $row) {
             $raw = $row['value'];
-            // Decode JSON arrays/objects, leave plain strings as-is
             if ($raw !== null && $raw !== '') {
                 $trimmed = ltrim((string) $raw);
                 if ($trimmed[0] === '{' || $trimmed[0] === '[') {
-                    $decoded = json_decode($raw, associative: true);
-                    $raw     = json_last_error() === JSON_ERROR_NONE ? $decoded : $raw;
+                    $decoded = json_decode($raw, true);
+                    $raw = json_last_error() === JSON_ERROR_NONE ? $decoded : $raw;
                 }
             }
             $map[(int) $row['entity_id']] = $raw;
