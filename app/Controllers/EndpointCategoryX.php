@@ -103,6 +103,8 @@ class EndpointCategoryX extends ResourceController
             'page'         => $page
         ]);
 
+        // Breadcrumb
+        $breadcrumb = $categoryModel->getBreadcrumb($category->id);
 
         // 3. Construct the specific productData shape
         $productData = [
@@ -122,7 +124,8 @@ class EndpointCategoryX extends ResourceController
                 'title'        => $category->name,
                 'permalink'   => $this->resolvePathToPermalink($category->path, $categoryModel),
                 'description' => $category->description ?? '',
-                'parent_id'   => $category->parent_id
+                'parent_id'   => $category->parent_id,
+                'breadcrumb' => $breadcrumb
             ],
             'products' => $productData,
         ]);
