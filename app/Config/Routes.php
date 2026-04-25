@@ -24,19 +24,23 @@ $routes->group('api', function ($routes) {
         $routes->post('new/(:segment)', 'NewOrder::receive/$1');
     });
 
-    // Endpoints to handle WP post types. Product.
+    // Endpoints to handle WP post types. Product,customers.
     $routes->group('posts', function ($routes) {
         $routes->post('product', 'Product::receive');
+        $routes->post('customers', 'Api\CustomersController::receive');
     });
 });
 
-$routes->group('api/get', ['filter' => 'apiAuth'], function ($routes) {
-    $routes->get('products', 'Product\AllProducts::send');
-    $routes->get('product/(:segment)', 'Product\SingleProduct::show/$1');
-
-    $routes->get('categories', 'EndpointCategoryX::send');
-    $routes->get('category/(:segment)', 'EndpointCategoryX::categoryBySlug/$1');
+$routes->group('api', ['filter' => 'apiAuth'], function ($routes) {
+    $routes->group('get', ['filter' => 'apiAuth'], function ($routes) {
+        $routes->get('products', 'Product\AllProducts::send');
+        $routes->get('product/(:segment)', 'Product\SingleProduct::show/$1');
+        $routes->get('categories', 'EndpointCategoryX::send');
+        $routes->get('category/(:segment)', 'EndpointCategoryX::categoryBySlug/$1');
+    });
+    $routes->group('post', ['filter' => 'apiAuth'], function ($routes) {});
 });
+
 
 $routes->get('/', 'Auth::login');
 $routes->post('/login', 'Auth::attempt');
@@ -68,7 +72,14 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         });
     });
 
-
+    // ── Admin dashboard CRUD (protect with your existing admin middleware) ─────────
+    $routes->group('admin/customers', ['filter' => 'adminAuth'], function ($routes) {
+        $routes->get('/',        'Api\CustomersController::index');
+        $routes->get('(:num)',   'Api\CustomersController::show/$1');
+        $routes->post('/',       'Api\CustomersController::create');
+        $routes->put('(:num)',   'Api\CustomersController::update/$1');
+        $routes->delete('(:num)', 'Api\CustomersController::delete/$1');
+    });
 
     // Admin + Staff
     $routes->group('', ['filter' => 'role:admin,staff'], function ($routes) {
