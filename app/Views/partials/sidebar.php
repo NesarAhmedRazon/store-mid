@@ -29,7 +29,9 @@
             <div class="text-[10px] text-subtle uppercase tracking-widest mt-0.5">Middleware Monitor</div>
         </div>
         <button id="drawer-close" class="lg:hidden w-6 h-6 flex items-center justify-center text-subtle hover:text-muted transition-colors bg-transparent border-none cursor-pointer">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
         </button>
     </div>
 
@@ -38,34 +40,57 @@
         <div class="text-[10px] uppercase tracking-widest text-subtle px-2.5 pt-2 pb-1">Monitor</div>
 
         <a href="/dashboard" class="nav-item <?= str_starts_with(uri_string(), 'dashboard') ? 'active' : '' ?>">
-            <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>
+            <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none">
+                <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4" />
+                <rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4" />
+                <rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4" />
+                <rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4" />
+            </svg>
             Dashboard
         </a>
         <a href="#" class="nav-item">
-            <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 4v4l3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4" />
+                <path d="M8 4v4l3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
             Request log
         </a>
         <a href="#" class="nav-item">
-            <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none"><path d="M2 11l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none">
+                <path d="M2 11l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
             Endpoints
         </a>
         <a href="#" class="nav-item">
-            <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none"><path d="M14 3H2v2h12V3zM14 7H2v2h12V7zM8 11H2v2h6v-2z" fill="currentColor" opacity=".6"/></svg>
+            <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none">
+                <path d="M14 3H2v2h12V3zM14 7H2v2h12V7zM8 11H2v2h6v-2z" fill="currentColor" opacity=".6" />
+            </svg>
             Hooks
+        </a>
+        <a href="/customers" class="nav-item">
+            <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none">
+                <circle cx="6" cy="4.5" r="2.5" fill="currentColor" />
+                <path d="M0 12.5C0 10 2.5 8 6 8s6 2 6 4.5H0z" fill="currentColor" />
+                <circle cx="11.5" cy="5" r="2" fill="currentColor" opacity=".6" />
+                <path d="M11.5 9c.8 0 1.6.2 2.2.5.8.5 1.3 1.2 1.3 2H10a5 5 0 0 0-.3-1.7c.5-.5 1.1-.8 1.8-.8z" fill="currentColor" opacity=".6" />
+            </svg>
+            Customers
         </a>
 
         <!-- Products with submenu -->
         <?php $isProducts = str_starts_with(uri_string(), 'products'); ?>
-        <button
-            onclick="toggleSubmenu('products-sub')"
-            class="nav-item w-full text-left justify-between <?= $isProducts ? 'active' : '' ?>"
-        >
+        <button onclick="toggleSubmenu('products-sub')" class="nav-item w-full text-left justify-between <?= $isProducts ? 'active' : '' ?>">
             <span class="flex items-center gap-2">
-                <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="1.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><path d="M9.5 12h5M12 9.5v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none">
+                    <rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4" />
+                    <rect x="9.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4" />
+                    <rect x="1.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4" />
+                    <path d="M9.5 12h5M12 9.5v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                </svg>
                 Products
             </span>
             <svg id="products-sub-chevron" class="w-3 h-3 opacity-50 transition-transform duration-150 <?= $isProducts ? 'rotate-180' : '' ?>" viewBox="0 0 16 16" fill="none">
-                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
         </button>
         <div id="products-sub" class="<?= $isProducts ? '' : 'hidden' ?> flex flex-col">
@@ -83,7 +108,11 @@
         <?php if (session()->get('role') === 'admin'): ?>
         <div class="text-[10px] uppercase tracking-widest text-subtle px-2.5 pt-4 pb-1">Admin</div>
         <a href="/users" class="nav-item">
-            <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M1 13c0-2.761 2.239-5 5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M11 9v6M8 12h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <svg class="shrink-0 w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none">
+                <circle cx="6" cy="5" r="3" stroke="currentColor" stroke-width="1.4" />
+                <path d="M1 13c0-2.761 2.239-5 5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                <path d="M11 9v6M8 12h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
             Users
         </a>
         <?php endif; ?>
@@ -111,14 +140,16 @@ function openDrawer() {
     document.getElementById('drawer-overlay').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
+
 function closeDrawer() {
     document.getElementById('sidebar').classList.add('-translate-x-full');
     document.getElementById('drawer-overlay').classList.add('hidden');
     document.body.style.overflow = '';
 }
+
 function toggleSubmenu(id) {
-    const sub      = document.getElementById(id);
-    const chevron  = document.getElementById(id + '-chevron');
+    const sub = document.getElementById(id);
+    const chevron = document.getElementById(id + '-chevron');
     sub.classList.toggle('hidden');
     chevron.classList.toggle('rotate-180');
 }

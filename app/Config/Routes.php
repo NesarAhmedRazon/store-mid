@@ -31,16 +31,20 @@ $routes->group('api', function ($routes) {
     });
 });
 
-$routes->group('api', ['filter' => 'apiAuth'], function ($routes) {
-    $routes->group('get', ['filter' => 'apiAuth'], function ($routes) {
-        $routes->get('products', 'Product\AllProducts::send');
-        $routes->get('product/(:segment)', 'Product\SingleProduct::show/$1');
-        $routes->get('categories', 'EndpointCategoryX::send');
-        $routes->get('category/(:segment)', 'EndpointCategoryX::categoryBySlug/$1');
-    });
-    $routes->group('post', ['filter' => 'apiAuth'], function ($routes) {});
-});
+$routes->group('api/get', ['filter' => 'apiAuth'], function ($routes) {
+    $routes->get('products', 'Product\AllProducts::send');
+    $routes->get('product/(:segment)', 'Product\SingleProduct::show/$1');
 
+    $routes->get('categories', 'EndpointCategoryX::send');
+    $routes->get('category/(:segment)', 'EndpointCategoryX::categoryBySlug/$1');
+
+    // Frontend customer dashboard — Bearer token verified by customerAuth.
+    $routes->group('customer', ['filter' => 'customerAuth'], function ($routes) {
+        $routes->get('me',        'Api\CustomerAuthController::me');
+        $routes->put('me',        'Api\CustomerAuthController::updateMe');
+        $routes->get('me/orders', 'Api\CustomerAuthController::myOrders');
+    });
+});
 
 $routes->get('/', 'Auth::login');
 $routes->post('/login', 'Auth::attempt');
@@ -73,29 +77,23 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     });
 
     // ── Admin dashboard CRUD (protect with your existing admin middleware) ─────────
-    $routes->group('admin/customers', ['filter' => 'adminAuth'], function ($routes) {
-        $routes->get('/',        'Api\CustomersController::index');
-        $routes->get('(:num)',   'Api\CustomersController::show/$1');
-        $routes->post('/',       'Api\CustomersController::create');
-        $routes->put('(:num)',   'Api\CustomersController::update/$1');
-        $routes->delete('(:num)', 'Api\CustomersController::delete/$1');
+    $routes->group('customers', ['filter' => 'auth'], function ($routes) {
+        $routes->get('/',        'Customer\CustomerController::index');
+        $routes->get('(:num)',   'Customer\CustomersController::show/$1');
+        $routes->post('/',       'Customer\CustomersController::create');
+        $routes->put('(:num)',   'Customer\CustomersController::update/$1');
+        $routes->delete('(:num)', 'Customer\CustomersController::delete/$1');
     });
 
     // Admin + Staff
-    $routes->group('', ['filter' => 'role:admin,staff'], function ($routes) {
+    $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('/reports', 'Reports::index');
     });
 
     // Admin only
-    $routes->group('', ['filter' => 'role:admin'], function ($routes) {
+    $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('/users', 'Admin\Users::index');
         $routes->post('/users/create', 'Admin\Users::create');
         $routes->post('/users/(:num)/role', 'Admin\Users::updateRole/$1');
     });
-
-    // Product
-    // $routes->group('/product',function($routes){
-
-    // });
-
 });
