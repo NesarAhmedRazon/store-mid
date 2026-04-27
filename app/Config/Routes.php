@@ -27,7 +27,17 @@ $routes->group('api', function ($routes) {
     // Endpoints to handle WP post types. Product,customers.
     $routes->group('posts', function ($routes) {
         $routes->post('product', 'Product::receive');
-        $routes->post('customers', 'Api\CustomersController::receive');
+        $routes->post('customer', 'Customer\CustomerController::receive');
+    });
+
+    // ── Customer social auth (public — no token required) ──────────────
+    // FIX 2: these routes were entirely missing
+    $routes->group('customer/auth', function ($routes) {
+        $routes->post('register', 'Api\CustomerAuthController::register'); // email registration
+        $routes->post('login',    'Api\CustomerAuthController::login');    // email login
+        $routes->post('google',   'Api\CustomerAuthController::google');
+        $routes->post('facebook', 'Api\CustomerAuthController::facebook');
+        $routes->post('logout',   'Api\CustomerAuthController::logout');
     });
 });
 
@@ -38,7 +48,8 @@ $routes->group('api/get', ['filter' => 'apiAuth'], function ($routes) {
     $routes->get('categories', 'EndpointCategoryX::send');
     $routes->get('category/(:segment)', 'EndpointCategoryX::categoryBySlug/$1');
 
-    // Frontend customer dashboard — Bearer token verified by customerAuth.
+    // ── Customer dashboard endpoints (Bearer token required) ───────────
+    // FIX 4: customerAuth filter now registered in Filters.php
     $routes->group('customer', ['filter' => 'customerAuth'], function ($routes) {
         $routes->get('me',        'Api\CustomerAuthController::me');
         $routes->put('me',        'Api\CustomerAuthController::updateMe');
@@ -76,13 +87,15 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         });
     });
 
-    // ── Admin dashboard CRUD (protect with your existing admin middleware) ─────────
+    // Customers — FIX 3: was Customer\CustomersController (extra 's'), corrected throughout
     $routes->group('customers', ['filter' => 'auth'], function ($routes) {
-        $routes->get('/',        'Customer\CustomerController::index');
-        $routes->get('(:num)',   'Customer\CustomersController::show/$1');
-        $routes->post('/',       'Customer\CustomersController::create');
-        $routes->put('(:num)',   'Customer\CustomersController::update/$1');
-        $routes->delete('(:num)', 'Customer\CustomersController::delete/$1');
+        $routes->get('/',              'Customer\CustomerController::index');
+        $routes->get('new',            'Customer\CustomerController::new');
+        $routes->post('/',             'Customer\CustomerController::create');
+        $routes->get('(:num)',         'Customer\CustomerController::show/$1');
+        $routes->get('(:num)/edit',    'Customer\CustomerController::edit/$1');
+        $routes->post('(:num)',        'Customer\CustomerController::update/$1');
+        $routes->get('(:num)/delete',  'Customer\CustomerController::delete/$1');
     });
 
     // Admin + Staff

@@ -9,17 +9,17 @@ use CodeIgniter\RESTful\ResourceController;
 /**
  * CustomerAuthController
  *
- * Handles all frontend-facing customer endpoints.
- *
  * Public endpoints:
- *   POST /customer/auth/google
- *   POST /customer/auth/facebook
- *   POST /customer/auth/logout
+ *   POST /api/customer/auth/register   — email + password registration
+ *   POST /api/customer/auth/login      — email + password login
+ *   POST /api/customer/auth/google     — Google id_token login
+ *   POST /api/customer/auth/facebook   — Facebook access_token login
+ *   POST /api/customer/auth/logout     — revoke current token
  *
- * Protected endpoints (require Bearer token):
- *   GET  /customer/me
- *   PUT  /customer/me
- *   GET  /customer/me/orders  (stub — wire to your OrderModel)
+ * Protected endpoints (Bearer token via CustomerAuthFilter):
+ *   GET  /api/get/customer/me
+ *   PUT  /api/get/customer/me
+ *   GET  /api/get/customer/me/orders
  */
 class CustomerAuthController extends ResourceController
 {
@@ -28,11 +28,8 @@ class CustomerAuthController extends ResourceController
     private CustomerModel      $customers;
     private CustomerTokenModel $tokens;
 
-    // Google token-info endpoint (no SDK needed).
     private const GOOGLE_TOKEN_INFO = 'https://oauth2.googleapis.com/tokeninfo?id_token=';
-
-    // Facebook graph endpoint.
-    private const FB_GRAPH = 'https://graph.facebook.com/me?fields=id,name,email,picture&access_token=';
+    private const FB_GRAPH          = 'https://graph.facebook.com/me?fields=id,name,email,picture&access_token=';
 
     public function __construct()
     {
@@ -41,19 +38,136 @@ class CustomerAuthController extends ResourceController
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // Social Auth
+    // Email auth
     // ═══════════════════════════════════════════════════════════════════
 
     /**
-     * POST /customer/auth/google
+     * POST /api/customer/auth/register
      *
+     * Body: { "email": "", "password": "", "name": "" }
+     *
+     * - If email exists with no password (social-only account) → attach email login
+     * - If email exists WITH a password → 409 conflict
+     */
+    public function register()
+    {
+        $body = $this->request->getJSON(true);
+
+        $email    = strtolower(trim($body['email']    ?? ''));
+        $password = $body['password'] ?? '';
+        $name     = trim($body['name'] ?? '');
+
+        if (!$email || !$password || !$name) {
+            return $this->fail('email, password and name are required.', 422);
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->fail('Invalid email address.', 422);
+        }
+
+        if (strlen($password) < 8) {
+            return $this->fail('Password must be at least 8 characters.', 422);
+        }
+
+        $existing = $this->customers->findByEmail($email);
+
+        if ($existing) {
+            if (!empty($existing->password)) {
+                return $this->fail('An account with this email already exists.', 409);
+            }
+
+            // Social/WP account exists — attach email login to it
+            $this->db->table('customers')
+                ->where('id', $existing->id)
+                ->update(['password' => password_hash($password, PASSWORD_BCRYPT)]);
+            $this->customers->addLoginMethod($existing->id, 'email');
+            $customer = $this->customers->find($existing->id);
+
+        } else {
+            try {
+                $customer = $this->customers->registerWithEmail($email, $password, $name);
+            } catch (\RuntimeException $e) {
+                return $this->fail('An account with this email already exists.', 409);
+            }
+        }
+
+        $this->customers->update($customer->id, ['last_login_at' => date('Y-m-d H:i:s')]);
+        $this->customers->touchActivity($customer->id);
+
+        $token = $this->tokens->issue($customer->id, 'email');
+
+        return $this->respondCreated([
+            'token'    => $token,
+            'customer' => $this->formatCustomer($this->customers->find($customer->id)),
+        ]);
+    }
+
+    /**
+     * POST /api/customer/auth/login
+     *
+     * Body: { "email": "", "password": "" }
+     *
+     * - Inactive customers CAN log in (login re-activates them)
+     * - Banned customers are blocked
+     * - Social-only accounts get a helpful hint about which method to use
+     */
+    public function login()
+    {
+        $body = $this->request->getJSON(true);
+
+        $email    = strtolower(trim($body['email']    ?? ''));
+        $password = $body['password'] ?? '';
+
+        if (!$email || !$password) {
+            return $this->fail('email and password are required.', 422);
+        }
+
+        $customer = $this->customers->verifyEmailLogin($email, $password);
+
+        if (!$customer) {
+            // Check if account exists but is social-only — give a helpful message
+            $exists = $this->customers->findByEmail($email);
+            if ($exists && empty($exists->password)) {
+                $methods = array_filter(
+                    $this->customers->getLoginMethods($exists),
+                    fn($m) => $m !== 'email'
+                );
+                $hint = !empty($methods) ? implode(' or ', $methods) : 'social login';
+                return $this->failUnauthorized("This account uses {$hint}. Please sign in with that method.");
+            }
+
+            return $this->failUnauthorized('Invalid email or password.');
+        }
+
+        if ($customer->status === 'banned') {
+            return $this->failForbidden('Your account has been suspended.');
+        }
+
+        // Re-activate if inactive — logging in is explicit activity
+        $updateData = ['last_login_at' => date('Y-m-d H:i:s')];
+        if ($customer->status === 'inactive') {
+            $updateData['status'] = 'active';
+        }
+
+        $this->customers->update($customer->id, $updateData);
+        $this->customers->touchActivity($customer->id);
+        $this->customers->addLoginMethod($customer->id, 'email');
+
+        $token = $this->tokens->issue($customer->id, 'email');
+
+        return $this->respond([
+            'token'    => $token,
+            'customer' => $this->formatCustomer($this->customers->find($customer->id)),
+        ]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Social auth
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * POST /api/customer/auth/google
      * Body: { "id_token": "<google id_token from frontend>" }
-     *
-     * Flow:
-     *   1. Verify id_token with Google's tokeninfo endpoint.
-     *   2. Find or create customer.
-     *   3. Issue session token.
-     *   4. Return customer + token.
      */
     public function google()
     {
@@ -64,30 +178,34 @@ class CustomerAuthController extends ResourceController
         }
 
         $profile = $this->verifyGoogleToken($idToken);
-
         if (!$profile) {
             return $this->failUnauthorized('Invalid or expired Google token.');
         }
 
         $customer = $this->customers->findOrCreateFromGoogle($profile);
 
-        if ($customer->status !== 'active') {
-            return $this->failForbidden('Your account is not active.');
+        if ($customer->status === 'banned') {
+            return $this->failForbidden('Your account has been suspended.');
         }
 
-        $this->customers->update($customer->id, ['last_login_at' => date('Y-m-d H:i:s')]);
+        $updateData = ['last_login_at' => date('Y-m-d H:i:s')];
+        if ($customer->status === 'inactive') {
+            $updateData['status'] = 'active';
+        }
+
+        $this->customers->update($customer->id, $updateData);
+        $this->customers->touchActivity($customer->id);
 
         $token = $this->tokens->issue($customer->id, 'google');
 
         return $this->respond([
             'token'    => $token,
-            'customer' => $this->formatCustomer($customer),
+            'customer' => $this->formatCustomer($this->customers->find($customer->id)),
         ]);
     }
 
     /**
-     * POST /customer/auth/facebook
-     *
+     * POST /api/customer/auth/facebook
      * Body: { "access_token": "<facebook user access_token from frontend>" }
      */
     public function facebook()
@@ -99,31 +217,34 @@ class CustomerAuthController extends ResourceController
         }
 
         $profile = $this->verifyFacebookToken($accessToken);
-
         if (!$profile) {
             return $this->failUnauthorized('Invalid or expired Facebook token.');
         }
 
         $customer = $this->customers->findOrCreateFromFacebook($profile);
 
-        if ($customer->status !== 'active') {
-            return $this->failForbidden('Your account is not active.');
+        if ($customer->status === 'banned') {
+            return $this->failForbidden('Your account has been suspended.');
         }
 
-        $this->customers->update($customer->id, ['last_login_at' => date('Y-m-d H:i:s')]);
+        $updateData = ['last_login_at' => date('Y-m-d H:i:s')];
+        if ($customer->status === 'inactive') {
+            $updateData['status'] = 'active';
+        }
+
+        $this->customers->update($customer->id, $updateData);
+        $this->customers->touchActivity($customer->id);
 
         $token = $this->tokens->issue($customer->id, 'facebook');
 
         return $this->respond([
             'token'    => $token,
-            'customer' => $this->formatCustomer($customer),
+            'customer' => $this->formatCustomer($this->customers->find($customer->id)),
         ]);
     }
 
     /**
-     * POST /customer/auth/logout
-     *
-     * Revokes the current token. Body or header: Bearer token.
+     * POST /api/customer/auth/logout
      */
     public function logout()
     {
@@ -139,40 +260,30 @@ class CustomerAuthController extends ResourceController
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // Protected customer endpoints  (use CustomerAuthFilter)
+    // Protected customer endpoints
     // ═══════════════════════════════════════════════════════════════════
 
-    /**
-     * GET /customer/me
-     *
-     * Returns the authenticated customer's profile.
-     */
+    /** GET /api/get/customer/me */
     public function me()
     {
         $customer = $this->getAuthenticatedCustomer();
-        if (!$customer) {
-            return $this->failUnauthorized();
-        }
+        if (!$customer) return $this->failUnauthorized();
+
+        $this->customers->touchActivity($customer->id);
 
         return $this->respond($this->formatCustomer($customer));
     }
 
     /**
-     * PUT /customer/me
-     *
-     * Allows the customer to update their own name, phone, billing_address.
-     * They cannot change email, status, or source via this endpoint.
+     * PUT /api/get/customer/me
+     * Customers can update name, phone, billing_address only.
      */
     public function updateMe()
     {
         $customer = $this->getAuthenticatedCustomer();
-        if (!$customer) {
-            return $this->failUnauthorized();
-        }
+        if (!$customer) return $this->failUnauthorized();
 
-        $data = $this->request->getJSON(true);
-
-        // Whitelist — customers can only touch these fields.
+        $data    = $this->request->getJSON(true);
         $allowed = ['name', 'phone', 'billing_address'];
         $payload = array_intersect_key($data, array_flip($allowed));
 
@@ -188,20 +299,18 @@ class CustomerAuthController extends ResourceController
             return $this->fail($this->customers->errors(), 422);
         }
 
+        $this->customers->touchActivity($customer->id);
+
         return $this->respond($this->formatCustomer($this->customers->find($customer->id)));
     }
 
-    /**
-     * GET /customer/me/orders
-     *
-     * Stub — wire this to your OrderModel when ready.
-     */
+    /** GET /api/get/customer/me/orders */
     public function myOrders()
     {
         $customer = $this->getAuthenticatedCustomer();
-        if (!$customer) {
-            return $this->failUnauthorized();
-        }
+        if (!$customer) return $this->failUnauthorized();
+
+        $this->customers->touchActivity($customer->id);
 
         // TODO: return (new OrderModel())->getByCustomer($customer->id);
         return $this->respond(['orders' => [], 'message' => 'Order system not yet connected.']);
@@ -211,34 +320,17 @@ class CustomerAuthController extends ResourceController
     // Private helpers
     // ═══════════════════════════════════════════════════════════════════
 
-    /**
-     * Verify a Google id_token via Google's tokeninfo endpoint.
-     *
-     * Returns a normalised profile array or null on failure.
-     *
-     * @param string $idToken
-     * @return array|null {id, email, name, avatar_url}
-     */
     private function verifyGoogleToken(string $idToken): ?array
     {
         $url      = self::GOOGLE_TOKEN_INFO . urlencode($idToken);
         $response = @file_get_contents($url);
-
-        if (!$response) {
-            return null;
-        }
+        if (!$response) return null;
 
         $data = json_decode($response, true);
-
-        // Validate audience matches our client id.
-        if (empty($data['sub']) || empty($data['email'])) {
-            return null;
-        }
+        if (empty($data['sub']) || empty($data['email'])) return null;
 
         $expectedAudience = env('GOOGLE_CLIENT_ID');
-        if ($expectedAudience && $data['aud'] !== $expectedAudience) {
-            return null;
-        }
+        if ($expectedAudience && ($data['aud'] ?? '') !== $expectedAudience) return null;
 
         return [
             'id'         => $data['sub'],
@@ -248,28 +340,14 @@ class CustomerAuthController extends ResourceController
         ];
     }
 
-    /**
-     * Verify a Facebook user access_token via Graph API.
-     *
-     * Returns a normalised profile array or null on failure.
-     *
-     * @param string $accessToken
-     * @return array|null {id, email, name, avatar_url}
-     */
     private function verifyFacebookToken(string $accessToken): ?array
     {
         $url      = self::FB_GRAPH . urlencode($accessToken);
         $response = @file_get_contents($url);
-
-        if (!$response) {
-            return null;
-        }
+        if (!$response) return null;
 
         $data = json_decode($response, true);
-
-        if (empty($data['id'])) {
-            return null;
-        }
+        if (empty($data['id'])) return null;
 
         return [
             'id'         => $data['id'],
@@ -279,54 +357,31 @@ class CustomerAuthController extends ResourceController
         ];
     }
 
-    /**
-     * Extract the raw Bearer token from the Authorization header.
-     *
-     * @return string|null
-     */
     private function extractBearerToken(): ?string
     {
         $header = $this->request->getHeaderLine('Authorization');
         if (preg_match('/^Bearer\s+(\S+)$/i', $header, $m)) {
             return $m[1];
         }
-
         return null;
     }
 
-    /**
-     * Validate the request token and return the customer, or null.
-     *
-     * @return object|null
-     */
     private function getAuthenticatedCustomer(): ?object
     {
         $plain = $this->extractBearerToken();
-        if (!$plain) {
-            return null;
-        }
+        if (!$plain) return null;
 
-        $customerId = $this->tokens->validate($plain);
-        if (!$customerId) {
-            return null;
-        }
+        $customerId = $this->tokens->validateToken($plain);
+        if (!$customerId) return null;
 
         $customer = $this->customers->find($customerId);
 
-        if (!$customer || $customer->status !== 'active') {
-            return null;
-        }
+        // Banned = hard block. Inactive = still allowed (they can log in)
+        if (!$customer || $customer->status === 'banned') return null;
 
         return $customer;
     }
 
-    /**
-     * Return a safe, minimal customer object for API responses.
-     * Strips internal ids (google_id, facebook_id, wp_user_id).
-     *
-     * @param object $customer
-     * @return array
-     */
     private function formatCustomer(object $customer): array
     {
         return [
@@ -339,6 +394,7 @@ class CustomerAuthController extends ResourceController
                 ? json_decode($customer->billing_address, true)
                 : null,
             'source'          => $customer->source,
+            'login_methods'   => $this->customers->getLoginMethods($customer),
             'status'          => $customer->status,
             'last_login_at'   => $customer->last_login_at,
             'created_at'      => $customer->created_at,

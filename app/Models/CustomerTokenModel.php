@@ -56,12 +56,13 @@ class CustomerTokenModel extends Model
     /**
      * Validate a plain token and return its customer_id if valid.
      *
+     * Renamed from validate() — conflicts with CodeIgniter\BaseModel::validate().
      * Also touches last_used_at on success.
      *
      * @param string $plain
      * @return int|null customer_id or null if invalid/expired.
      */
-    public function validate(string $plain): ?int
+    public function validateToken(string $plain): ?int
     {
         $hash   = hash('sha256', $plain);
         $record = $this->where('token_hash', $hash)

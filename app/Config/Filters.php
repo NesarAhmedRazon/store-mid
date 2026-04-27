@@ -38,6 +38,7 @@ class Filters extends BaseFilters
         'auth' => \App\Filters\AuthFilter::class,
         'role' => \App\Filters\RoleFilter::class,
         'apiAuth' => \App\Filters\ApiAuthFilter::class,
+        'customerAuth'  => \App\Filters\CustomerAuthFilter::class,
     ];
 
     /**

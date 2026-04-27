@@ -1,7 +1,5 @@
 <?php
 
-//
-
 namespace App\Controllers\Customer;
 
 use App\Models\CustomerModel;
@@ -11,19 +9,9 @@ use CodeIgniter\RESTful\ResourceController;
 /**
  * CustomerController
  *
- * Handles all customer concerns in one place:
+ * Handles all customer concerns:
  *   1. WP webhook receiver  — POST /api/posts/customers
- *   2. Dashboard HTML views — GET/POST /customers/*
- *
- * Routes:
- *   POST customers/receive      → receive()
- *   GET  customers/             → index()
- *   GET  customers/new          → new()
- *   POST customers/             → create()
- *   GET  customers/(:num)       → show($id)
- *   GET  customers/(:num)/edit  → edit($id)
- *   POST customers/(:num)       → update($id)
- *   GET  customers/(:num)/delete → delete($id)
+ *   2. Admin dashboard CRUD — GET/POST /customers/*
  */
 class CustomerController extends ResourceController
 {
@@ -37,40 +25,22 @@ class CustomerController extends ResourceController
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // WP Webhook
-    // POST /api/posts/customers
+    // WP Webhook — POST /api/posts/customers
     // ═══════════════════════════════════════════════════════════════════
 
-    /**
-     * Receive a customer create/update push from WooCommerce.
-     *
-     * Expected payload (array of customers or single object):
-     * {
-     *   "customers": [
-     *     {
-     *       "wp_user_id": 42,
-     *       "email": "user@example.com",
-     *       "name": "John Doe",
-     *       "phone": "...",
-     *       "avatar_url": "...",
-     *       "billing_address": { "line1": "...", "city": "...", ... },
-     *       "google_id": "...",      // optional
-     *       "facebook_id": "..."     // optional
-     *     }
-     *   ]
-     * }
-     */
     public function receive()
     {
-        // Verify shared secret from WP plugin.
-        $secret = $this->request->getHeaderLine('X-WP-Webhook-Secret');
-        if ($secret !== env('WP_WEBHOOK_SECRET')) {
-            return $this->failUnauthorized('Invalid webhook secret.');
+       // ── Auth ────────────────────────────────────────────────────────
+        $secret = $this->request->getHeaderLine('X-WC-Webhook-Secret');
+
+        if ($secret !== env('WC_WEBHOOK_SECRET')) {
+            log_message('error', 'customers:Invalid webhook secret provided');
+            return $this->failUnauthorized('Invalid webhook secret');
         }
 
         $body = $this->request->getJSON(true);
-
-        // Accept both a single object and a "customers" array for flexibility.
+        
+        // Accept both a single object and a "customers" array.
         $items = $body['customers'] ?? (isset($body['wp_user_id']) ? [$body] : []);
 
         if (empty($items)) {
@@ -80,57 +50,61 @@ class CustomerController extends ResourceController
         $results = ['synced' => 0, 'errors' => []];
 
         foreach ($items as $item) {
+            
             if (empty($item['email'])) {
-                $results['errors'][] = ['wp_user_id' => $item['wp_user_id'] ?? null, 'reason' => 'Missing email'];
+                log_message('info',print_r($item,true));
+                $results['errors'][] = [
+                    'wp_user_id' => $item['wp_user_id'] ?? null,
+                    'reason'     => 'Missing email',
+                ];
                 continue;
             }
 
             try {
+                log_message('info', print_r($item,true));
                 $this->customers->upsertFromWp($item);
                 $results['synced']++;
             } catch (\Throwable $e) {
-                log_message('error', '[CustomerSync] ' . $e->getMessage(), $item);
+                log_message('error', '[CustomerSync] ' . $e->getMessage());
                 $results['errors'][] = [
                     'wp_user_id' => $item['wp_user_id'] ?? null,
                     'reason'     => 'Internal error',
                 ];
             }
+            
         }
 
         return $this->respond($results, 200);
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // Index
-    // GET /customers
+    // Index — GET /customers
     // ═══════════════════════════════════════════════════════════════════
 
     public function index()
     {
-        return 'hi';
+        // FIX: removed the blocking `return 'hi'`
         $page    = (int) ($this->request->getGet('page')   ?? 1);
-        $perPage = 20;
+        $perPage = 25;
         $search  = $this->request->getGet('search') ?: null;
         $status  = $this->request->getGet('status') ?: null;
 
         $result = $this->customers->paginated($page, $perPage, $search, $status);
 
-        // return view('admin/customers/index', [
-        //     'customers'   => $result['data'],
-        //     'total'       => $result['total'],
-        //     'pages'       => $result['pages'],
-        //     'currentPage' => $page,
-        //     'search'      => $search,
-        //     'status'      => $status,
-        //     'perPage'     => $perPage,
-        // ]);
-
-        
+        return view('admin/customers/index', [
+            'title'       => 'Customers',
+            'customers'   => $result['data'],
+            'total'       => $result['total'],
+            'pages'       => $result['pages'],
+            'currentPage' => $page,
+            'search'      => $search,
+            'status'      => $status,
+            'perPage'     => $perPage,
+        ]);
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // Show
-    // GET /customers/:id
+    // Show — GET /customers/:id
     // ═══════════════════════════════════════════════════════════════════
 
     public function show($id = null)
@@ -140,27 +114,27 @@ class CustomerController extends ResourceController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Customer #{$id} not found.");
         }
 
-        return view('customers/show', [
+        return view('admin/customers/show', [
+            'title'    => $customer->name,
             'customer' => $customer,
         ]);
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // New — show create form
-    // GET /customers/new
+    // New — GET /customers/new
     // ═══════════════════════════════════════════════════════════════════
 
     public function new()
     {
-        return view('customers/create', [
+        return view('admin/customers/create', [
+            'title'  => 'New customer',
             'errors' => session()->getFlashdata('errors') ?? [],
             'old'    => session()->getFlashdata('old')    ?? [],
         ]);
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // Create — process form POST
-    // POST /customers
+    // Create — POST /customers
     // ═══════════════════════════════════════════════════════════════════
 
     public function create()
@@ -204,8 +178,7 @@ class CustomerController extends ResourceController
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // Edit — show edit form
-    // GET /customers/:id/edit
+    // Edit — GET /customers/:id/edit
     // ═══════════════════════════════════════════════════════════════════
 
     public function edit($id = null)
@@ -215,15 +188,15 @@ class CustomerController extends ResourceController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Customer #{$id} not found.");
         }
 
-        return view('customers/edit', [
+        return view('admin/customers/edit', [
+            'title'    => 'Edit — ' . $customer->name,
             'customer' => $customer,
             'errors'   => session()->getFlashdata('errors') ?? [],
         ]);
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // Update — process edit form POST
-    // POST /customers/:id
+    // Update — POST /customers/:id
     // ═══════════════════════════════════════════════════════════════════
 
     public function update($id = null)
@@ -235,7 +208,6 @@ class CustomerController extends ResourceController
 
         $data = $this->request->getPost();
 
-        // Prevent email collision with another customer.
         if (!empty($data['email'])) {
             $byEmail = $this->customers->findByEmail($data['email']);
             if ($byEmail && (int) $byEmail->id !== (int) $id) {
@@ -260,13 +232,17 @@ class CustomerController extends ResourceController
             return redirect()->to("/customers/{$id}/edit");
         }
 
+        // If status changed to banned — revoke all active tokens immediately
+        if (($payload['status'] ?? null) === 'banned' && $customer->status !== 'banned') {
+            $this->tokens->revokeAll((int) $id);
+        }
+
         session()->setFlashdata('success', 'Customer updated successfully.');
         return redirect()->to("/customers/{$id}");
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // Delete
-    // GET /customers/:id/delete
+    // Delete — GET /customers/:id/delete
     // ═══════════════════════════════════════════════════════════════════
 
     public function delete($id = null)

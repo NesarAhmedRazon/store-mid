@@ -11,17 +11,17 @@ class CreateCustomersTable extends Migration
         $this->forge->addField([
             'id' => [
                 'type'           => 'INT',
-                'constraint'     => 11,
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+
             // ── External identifiers ─────────────────────────────────────
             'wp_user_id' => [
-                'type'       => 'INT',
-                'constraint' => 11,
-                'unsigned'   => true,
-                'null'       => true,
-                'default'    => null,
+                'type'     => 'INT',
+                'unsigned' => true,
+                'null'     => true,
+                'default'  => null,
+                'comment'  => 'WooCommerce user ID',
             ],
             'google_id' => [
                 'type'       => 'VARCHAR',
@@ -35,6 +35,7 @@ class CreateCustomersTable extends Migration
                 'null'       => true,
                 'default'    => null,
             ],
+
             // ── Core fields ──────────────────────────────────────────────
             'email' => [
                 'type'       => 'VARCHAR',
@@ -64,32 +65,28 @@ class CreateCustomersTable extends Migration
                 'default' => null,
                 'comment' => 'JSON: line1, line2, city, state, postcode, country',
             ],
+
             // ── Status & source ──────────────────────────────────────────
             'status' => [
-                'type'       => "ENUM('active','inactive','banned')",
+                'type'       => 'ENUM',
+                'constraint' => ['active', 'inactive', 'banned'],
                 'default'    => 'active',
             ],
             'source' => [
-                'type'       => "ENUM('wp_import','google','facebook','manual')",
+                'type'       => 'ENUM',
+                'constraint' => ['wp_import', 'google', 'facebook', 'manual'],
                 'null'       => false,
                 'comment'    => 'How this customer was first created',
             ],
+
             // ── Timestamps ───────────────────────────────────────────────
             'last_login_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
+                'type'    => 'DATETIME',
+                'null'    => true,
                 'default' => null,
             ],
-            'created_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
-                'default' => null,
-            ],
-            'updated_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
-                'default' => null,
-            ],
+            'created_at DATETIME DEFAULT CURRENT_TIMESTAMP',
+            'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
         ]);
 
         $this->forge->addPrimaryKey('id');

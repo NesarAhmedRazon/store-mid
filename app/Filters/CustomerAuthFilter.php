@@ -33,7 +33,7 @@ class CustomerAuthFilter implements FilterInterface
         }
  
         $tokens     = new CustomerTokenModel();
-        $customerId = $tokens->validate($plain);
+        $customerId = $tokens->validateToken($plain);
  
         if (!$customerId) {
             return service('response')
