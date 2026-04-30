@@ -72,13 +72,13 @@
                     </span>
                 </td>
                 <td class="px-4 py-2.5 font-mono text-[12px] text-up text-right whitespace-nowrap">
-                    <?= $p->sale_price !== null ? '৳ ' . number_format($p->sale_price, 2) : '<span class="text-subtle">—</span>' ?>
+                    <?= $p->price_offer !== null ? '৳ ' . number_format($p->price_offer, 2) : '<span class="text-subtle">—</span>' ?>
                 </td>
                 <td class="px-4 py-2.5 font-mono text-[12px] text-text text-right whitespace-nowrap">
-                    ৳ <?= number_format($p->regular_price, 2) ?>
+                    ৳ <?= number_format($p->price_regular, 2) ?>
                 </td>
                 <td class="px-4 py-2.5 font-mono text-[12px] text-text text-right whitespace-nowrap">                    
-                    <?= $p->cost !== null ? '৳ ' . format_decimal($p->cost) : '—' ?>
+                    <?= $p->price_buy !== null ? '৳ ' . format_decimal($p->price_buy) : '—' ?>
                 </td>
                 <td class="px-4 py-2.5 font-mono text-[11px] text-subtle whitespace-nowrap">
                     <?= $p->wc_created_at ? date('d M Y', strtotime($p->wc_created_at)) : '<span class="text-subtle">—</span>' ?>

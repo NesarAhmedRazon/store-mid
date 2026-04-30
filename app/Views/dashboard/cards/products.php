@@ -32,8 +32,8 @@
                     <td class="px-4 py-2.5 font-mono text-[12px] text-text text-right whitespace-nowrap"><?= number_format($p->stock_quantity) ?></td>
                     <td class="px-4 py-2.5 whitespace-nowrap"><span class="badge badge-<?= $statusBadge[$p->stock_status] ?>"><?= $p->stock_status ?></span></td>
                     <td class="px-4 py-2.5 font-mono text-[12px] text-right whitespace-nowrap">
-                        <span class="text-up">৳<?= number_format($p->sale_price ?? $p->regular_price, 2) ?></span>
-                        <?php if ($p->sale_price): ?><span class="text-subtle text-[11px] line-through ml-1">৳<?= number_format($p->regular_price, 2) ?></span><?php endif; ?>
+                        <span class="text-up">৳<?= number_format($p->price_sell, 2) ?></span>
+                        <?php if ($p->price_offer): ?><span class="text-subtle text-[11px] line-through ml-1">৳<?= number_format($p->price_regular, 2) ?></span><?php endif; ?>
                         
                     </td>
                     <td class="px-4 py-2.5 font-mono text-[11px] text-subtle whitespace-nowrap"><?= \CodeIgniter\I18n\Time::parse($p->updated_at)->humanize() ?></td>

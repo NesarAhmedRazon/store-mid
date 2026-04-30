@@ -18,11 +18,13 @@ class ProductModel extends Model
         'stock_quantity',
         'stock_unit',
         'stock_status',
-        'sale_price',
-        'regular_price',
+        'price_buy',
+        'price_sell',
+        'price_offer',
+        'price_regular',
         'wc_created_at',
         'thumb_id',  // FK → media.id (thumbnail shortcut, no join needed)
-        'cost',
+        
         // gallery lives in media_entities — no gallery_ids column
     ];
 
@@ -37,7 +39,7 @@ class ProductModel extends Model
     {
         $product = $this->find($productId);
 
-        if (!$product) {
+        if (!$product) { 
             return null;
         }
 

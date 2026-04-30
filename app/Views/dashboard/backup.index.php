@@ -512,8 +512,8 @@
                                     <td><span class="badge badge-<?= $p->stock_status === 'instock' ? 'up' : ($p->stock_status === 'onbackorder' ? 'warn' : 'down') ?>"><?= $p->stock_status ?></span></td>
                                     <td class="col-price">
                                         <span class="prod-price">
-                                            <span class="sale">৳<?= number_format($p->sale_price ?? $p->regular_price, 2) ?></span>
-                                            <?php if ($p->sale_price): ?><span class="regular">৳<?= number_format($p->regular_price, 2) ?></span><?php endif; ?>
+                                            <span class="sale">৳<?= number_format($p->price->offer ?? $p->price->regular, 2) ?></span>
+                                            <?php if ($p->price->offer): ?><span class="regular">৳<?= number_format($p->price->regular, 2) ?></span><?php endif; ?>
                                         </span>
                                     </td>
                                     <td><span class="prod-updated"><?= $p->updated_at ?></span></td>

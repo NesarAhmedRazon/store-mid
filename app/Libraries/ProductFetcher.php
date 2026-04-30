@@ -48,7 +48,7 @@ class ProductFetcher
         if ($mode === 'minimal') {
             $select = 'p.id, p.title, p.permalink, p.updated_at';
         } elseif ($mode === 'summary') {
-            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status, p.stock_quantity, p.stock_unit, p.regular_price, p.sale_price';
+            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status, p.stock_quantity, p.stock_unit, p.price_regular, p.price_offer, p.price_buy, p.price_sell';
         } else {
             $select = 'p.*';
         }
@@ -125,8 +125,10 @@ class ProductFetcher
      */
     public function getProduct(int $productId, array $options = []): ?array
     {
-        $mode        = $options['mode'] ?? 'full';
-        $includeMeta = $options['includeMeta'] ?? ($mode === 'full');
+        
+        $mode           = $options['mode'] ?? 'full';
+        $includeMeta    = $options['includeMeta'] ?? ($mode === 'full');
+        $internal       = $options['internal'] ?? false;
 
         // ------------------------------------------------------------------
         // 1. Fetch the product
@@ -134,7 +136,7 @@ class ProductFetcher
         if ($mode === 'minimal') {
             $select = 'p.id, p.title, p.permalink, p.updated_at';
         } elseif ($mode === 'summary') {
-            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status, p.stock_quantity, p.stock_unit, p.regular_price, p.sale_price';
+            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status, p.stock_quantity, p.stock_unit, p.price_regular, p.price_offer, p.price_buy, p.price_sell';
         } else {
             $select = 'p.*';
         }
@@ -155,7 +157,7 @@ class ProductFetcher
         // ------------------------------------------------------------------
         // 3. Transform using shared method
         // ------------------------------------------------------------------
-        return $this->transformProduct($product, $sideLoads, $mode, $includeMeta);
+        return $this->transformProduct($product, $sideLoads, $mode, $includeMeta,$internal);
     }
 
     /**
@@ -233,7 +235,7 @@ class ProductFetcher
      * Transform a single product record into the standardized output format
      * This is the SINGLE SOURCE OF TRUTH for product data structure
      */
-    private function transformProduct(array $product, array $sideLoads, string $mode, bool $includeMeta): array
+    private function transformProduct(array $product, array $sideLoads, string $mode, bool $includeMeta,bool $internal = false): array
     {
         $pid = $product['id'];
 
@@ -259,21 +261,16 @@ class ProductFetcher
         // ------------------------------------------------------------------
         if ($mode === 'summary') {
             $attrs = $sideLoads['summaryAttr'][$pid] ?? [];
-
             $product['brand']   = $attrs[self::ATTR_BRAND] ?? null;
             $product['mfr']     = $attrs[self::ATTR_MFR] ?? null;
-            $product['package'] = $attrs[self::ATTR_PKG] ?? null;
-            $product['price']   = isset($product['sale_price']) && $product['sale_price']
-                ? (float) $product['sale_price']
-                : (float) ($product['regular_price'] ?? 0);
+            $product['package'] = $attrs[self::ATTR_PKG] ?? null; 
             $product['lcscId']  = $attrs[self::ATTR_LCSC] ?? null;
-
-            // Remove raw price fields
-            unset($product['sale_price'], $product['regular_price']);
         }
 
+        
+
         // ------------------------------------------------------------------
-        // Stock information (for all non-minimal modes)
+        // Stock and Price information (for all non-minimal modes)
         // ------------------------------------------------------------------
         if ($mode !== 'minimal') {
             $product['docs'] = $sideLoads['docsMap'][$pid] ?? null;
@@ -285,6 +282,26 @@ class ProductFetcher
 
             // Remove raw stock fields to avoid duplication
             unset($product['stock_unit'], $product['stock_status'], $product['stock_quantity']);
+
+            // ---------------------------
+            // Pricing
+            // ---------------------------
+
+            $selling_price = $product['price_sell'] ?? 0;
+            $regular_price = isset($product['price_regular']) ? $product['price_regular'] : 0;
+            $offer_price = isset($product['price_offer']) ? (float) $product['price_offer'] : null;
+            $buying_price = isset($product['price_buy']) ? $product['price_buy'] : 0;
+            
+            $product['price'] = [
+                'sell'   => (float) $selling_price,
+                'regular'   => (float) $regular_price,
+                'offer'     => $offer_price,                
+            ];
+            if($internal){
+                $product['price']['cost'] = (float) $buying_price;
+            }
+            // Remove raw price fields
+            unset($product['price_sell'], $product['price_buy'],$product['price_regular'],$product['price_offer']);
         }
 
         // ------------------------------------------------------------------
@@ -297,10 +314,12 @@ class ProductFetcher
         // ------------------------------------------------------------------
         // Strip internal fields
         // ------------------------------------------------------------------
-        foreach (array_keys($product) as $key) {
-            if (strpos($key, 'wc_') === 0) unset($product[$key]);
+        if(!$internal){
+            foreach (array_keys($product) as $key) {
+                if (strpos($key, 'wc_') === 0) unset($product[$key]);
+            }
         }
-        unset($product['id'], $product['thumb_id']);
+        unset($product['thumb_id']);
 
         return $product;
     }

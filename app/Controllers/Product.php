@@ -48,10 +48,11 @@ class Product extends ResourceController
                 'stock_quantity' => $data['stock']['quantity'] ?? null,
                 'stock_unit'     => $data['stock']['unit'] ?? null,
                 'stock_status'   => $data['stock']['status'] ?? 'outofstock',
-                'sale_price'     => $data['sale_price'] ?? null,
-                'regular_price'  => $data['regular_price'] ?? 0,
+                'price_offer'     => $data['price']['sale'] ?? null,
+                'price_regular'  => $data['price']['regular'] ?? 0,
+                'price_buy'           => $data['price']['cost'] ?? 0,
+                'price_sell'  => $data['price']['selling'] ?? 0,
                 'wc_created_at'  => $data['created_at'] ?? Time::now()->toDateTimeString(),
-                'cost'           => $data['wc_cog'] ?? 0,
             ];
 
             $existing = $model->where('wc_id', $data['wc_id'])->first();
@@ -203,7 +204,9 @@ class Product extends ResourceController
                 'stock',
                 'seo',
                 'smdp_moq',
-                'cogs_total_value'
+                'cogs_total_value',
+                'content',
+                'title_bn'
                 // Add other meta keys you want to process
             ];
 
@@ -233,7 +236,7 @@ class Product extends ResourceController
             log_message('error', 'Product receive exception: ' . $e->getMessage());
             return $this->fail('Server error: ' . $e->getMessage(), 500);
         }
-
+log_message('info',print_r($data,true));
         return $this->respond([
             'status'     => 'ok',
             'wc_id'      => $data['wc_id'],

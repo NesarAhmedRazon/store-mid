@@ -1,6 +1,6 @@
  <?php
-$regular_price   = $data['regular_price'] ?? 0;
-$sale_price   = $data['sale_price'] ?? null;
+$regular_price   = $data['price_regular'] ?? $data['regular_price'] ?? 0;
+$offer_price   = $data['price_offer'] ?? null;
 $cost   = $data['cost'] ?? null;
 ?>
     <div class="card">
@@ -16,9 +16,9 @@ $cost   = $data['cost'] ?? null;
                 </div>
                 <div>
                     <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Sale price</div>
-                    <?php if ($sale_price !== null): ?>
+                    <?php if ($offer_price !== null): ?>
                     <div class="font-mono text-[22px] font-light text-up">
-                        ৳<?= number_format($sale_price, 2) ?>
+                        ৳<?= number_format($offer_price, 2) ?>
                     </div>
                     <?php else: ?>
                     <div class="font-mono text-[22px] font-light text-subtle">—</div>
@@ -37,13 +37,13 @@ $cost   = $data['cost'] ?? null;
             </div>
 
             <?php
-            $activePriceForMargin = $sale_price ?? $regular_price;
+            $activePriceForMargin = $offer_price ?? $regular_price;
             $margin    = $activePriceForMargin - $cost;
             $marginPct = $cost > 0 ? ($margin / $cost) * 100 : 0;
             ?>
             <div class="px-5 pb-5 pt-0 flex items-center gap-4 border-t border-border mt-0">
                 <div class="text-[11px] text-subtle mt-4">
-                    Margin on <?= $sale_price !== null ? 'sale' : 'regular' ?> price:
+                    Margin on <?= $offer_price !== null ? 'sale' : 'regular' ?> price:
                     <span class="font-mono font-medium <?= $margin >= 0 ? 'text-up' : 'text-down' ?>">
                         ৳<?= number_format($margin, 2) ?> (<?= number_format($marginPct, 1) ?>%)
                     </span>

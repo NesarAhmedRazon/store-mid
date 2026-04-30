@@ -26,16 +26,19 @@ $dummy_tags = [
 
 
 $image_data = ['thumb' => $product->thumb,'gallery'=>$product->gallery ?? []];
+log_message('info',print_r($product->price,true));
 $pricing = [
-    'regular_price' => $product->regular_price,
-    'sale_price' => $product->sale_price,
-    'cost' => $product->cost,
+    'regular' => $product->price['regular'],
+    'offer' => $product->price['offer'],
+    'cost' => $product->price['cost'],
 ];
 $stock = [
     'stock_status' => $product->stock_status ?? 'outofstock',
     'stock_quantity' => $product->stock_quantity ?? 0,
 ];
 $categories = $product->categories ?? [];
+$page_content = $product->metadata['content'] ?? [];
+
 
 $statusBadge = [
     'instock'     => 'up',
@@ -78,11 +81,37 @@ $statusBadge = [
 
     <!-- ── Left / main column ── -->
     <div class="col-span-1 sm:col-span-2 flex flex-col gap-4">
-        <!-- Product info -->
-         <?= view('products/widgets/product_info', ['data' => $product ?? []],['saveData' => false]) ?> 
+        
 
         <!-- Attributes -->
-        <?= view('products/widgets/attributs', ['data' => $product->attributes ?? []],['saveData' => false]) ?> 
+        <?= view('products/widgets/tabs', ['data' => [
+                                                [
+                                                    'tabLabel' => 'Product Info',
+                                                    'tabId' => 'product_info',
+                                                    'data' => $product ?? [],
+                                                    'view' => 'products/widgets/product_info'
+                                                ],
+                                                [
+                                                    'tabLabel' => 'Categories',
+                                                    'tabId' => 'categories',
+                                                    'data' => $categories ?? [],
+                                                    'view' => 'products/widgets/categories'
+                                                ],
+                                                [
+                                                    'tabLabel' => 'Attributs',
+                                                    'tabId' => 'attributs',
+                                                    'data' => $product->attributes ?? [],
+                                                    'view' => 'products/widgets/attributs'
+                                                ],
+                                                [
+                                                    'tabLabel' => 'Content',
+                                                    'tabId' => 'page_content',
+                                                    'data' => $page_content ?? [],
+                                                    'view' => 'products/widgets/content'
+                                                ],
+                                         ],['saveData' => false]
+                                         ]) ?> 
+        
 
         <!-- Pricing -->
         <?= view('products/widgets/pricing', ['data' => $pricing ?? []],['saveData' => false]) ?> 
@@ -96,8 +125,6 @@ $statusBadge = [
         <!-- Stock -->        
         <?= view('products/widgets/stock', ['data' => $stock ?? []],['saveData' => false]) ?> 
 
-        <!-- Categories -->
-         <?= view('products/widgets/categories', ['data' => $categories ?? []],['saveData' => false]) ?> 
         
 
         <!-- Tags -->

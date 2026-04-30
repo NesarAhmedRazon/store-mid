@@ -5,12 +5,13 @@ namespace App\Controllers;
 use App\Models\ProductModel;
 use App\Libraries\AttributeService;
 use App\Models\CategoryModel;
+use App\Libraries\ProductFetcher;
 
 class AdminProducts extends BaseController
 {
     protected ProductModel $model;
 
-    public function __construct()
+    public function __construct() 
     {
         $this->model = new ProductModel();
     }
@@ -41,8 +42,16 @@ class AdminProducts extends BaseController
             return redirect()->to('/products')->with('error', 'Invalid product ID.');
         }
  
-        $product = $this->model->find($id);
+        $productFetcher = new ProductFetcher();
+        // $product = $this->model->find($id);
  
+        $product = $productFetcher->getProduct($id, [
+            'mode'     => 'full',
+            'internal' => true
+        ]);
+
+        
+       $product = (object) $product;
         if (!$product) {
             return redirect()->to('/products')->with('error', 'Product not found.');
         }
