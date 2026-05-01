@@ -31,7 +31,6 @@ $routes->group('api', function ($routes) {
     });
 
     // ── Customer social auth (public — no token required) ──────────────
-    // FIX 2: these routes were entirely missing
     $routes->group('customer/auth', function ($routes) {
         $routes->post('register', 'Api\CustomerAuthController::register'); // email registration
         $routes->post('login',    'Api\CustomerAuthController::login');    // email login
@@ -70,6 +69,13 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->group('products', ['filter' => 'auth'], function ($routes) {
         $routes->get('/', 'AdminProducts::index');
         $routes->get('preview', 'AdminProducts::preview');
+        // Create
+        $routes->get('create',   'AdminProducts::create');
+        $routes->post('store',   'AdminProducts::store');
+
+        // Edit / Update
+        $routes->get('edit',     'AdminProducts::edit');     // ?id=1
+        $routes->post('update',  'AdminProducts::update');   // ?id=1
 
 
         // Product Categories

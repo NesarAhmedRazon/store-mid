@@ -58,7 +58,7 @@ $statusBadge = [
            class="flex-1 sm:flex-none text-center text-[11px] font-mono text-subtle no-underline px-2.5 py-1 border border-border rounded hover:border-border-md hover:text-muted transition-colors">
             view on store ↗
         </a>
-        <a href="/products?edit=<?= $product->id ?>"
+        <a href="/products/edit?id=<?= $product->id ?>"
            class="flex-1 sm:flex-none text-center text-[11px] font-mono text-text no-underline px-2.5 py-1 border border-border-md rounded hover:bg-bg transition-colors">
             edit →
         </a>

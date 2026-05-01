@@ -9,14 +9,21 @@
 </div>
 <?php endif; ?>
 
-<!-- Header row -->
-<div class="flex items-center justify-between mb-5">
-    <div>
-        <h2 class="text-[15px] font-medium text-text">Products</h2>
-        <p class="text-[12px] text-subtle mt-0.5"><?= count($products) ?> product<?= count($products) !== 1 ? 's' : '' ?> synced from WooCommerce</p>
+
+<!-- Action bar -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
+    <div class="flex items-center gap-2">
+        <span class="text-[10px] uppercase tracking-widest text-subtle shrink-0">Total</span>
+        <span class="font-mono text-[12px] text-text"><?= count($products) ?> product<?= count($products) !== 1 ? 's' : '' ?></span>
+    </div>
+    <div class="flex items-center gap-2 w-full sm:w-auto">
+        <input type="text" id="product-search" placeholder="search products..." class="flex-1 sm:w-52 text-[12px] font-mono px-3 py-1.5 border border-border rounded-md bg-transparent text-text placeholder:text-subtle focus:outline-none focus:border-border-md">
+        
+        <a href="/products/create" class="shrink-0 text-[11px] font-mono text-text no-underline px-3 py-1.5 border border-border-md rounded-md hover:bg-bg transition-colors">
+            + new
+        </a>
     </div>
 </div>
-
 <!-- Table -->
 <div class="card">
     <table class="w-full border-collapse" style="table-layout: auto;">
