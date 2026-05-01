@@ -1,6 +1,12 @@
 <?php 
 $info   = $data   ?? [];
+$stock  = $info->stock ?? [];
 
+$statusBadge = [
+    'instock'     => 'up',
+    'outofstock'  => 'down',
+    'onbackorder' => 'warn',
+];
 ?>
         <div class="card">
             <div class="card-head">
@@ -27,12 +33,28 @@ $info   = $data   ?? [];
                         </div>
                     </div>
                 </div>
-                <div>
-                    <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Permalink</div>
-                    <a href="<?= esc($data->permalink) ?>" target="_blank"
-                       class="font-mono text-[12px] text-info no-underline hover:underline break-all">
-                        <?= esc($data->permalink) ?>
-                    </a>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Stock Status</div>
+                        <span class="badge badge-<?= $statusBadge[$stock['status']] ?? 'info' ?>">
+                            <?= esc($stock['status']) ?>
+                        </span>
+                    </div>
+                    <div>
+                        <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Stock Quantity</div>
+                        <span class="badge badge-<?= $statusBadge[$stock['quantity']] ?? 'info' ?>">
+                            <?= esc($stock['quantity'] !== null ? number_format($stock['quantity']) : '—') ?>
+                        </span>
+                        <div class="text-[10px] text-subtle mt-1">units in stock</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] uppercase tracking-widest text-subtle mb-1">Permalink</div>
+                        <a href="<?= esc($data->permalink) ?>" target="_blank"
+                        class="font-mono text-[12px] text-info no-underline hover:underline break-all">
+                            <?= esc($data->permalink) ?>
+                        </a>
+                    </div>
                 </div>
+                
             </div>
         </div>

@@ -11,14 +11,6 @@
 
 
 
-
-$dummy_categories = [
-    ['name' => 'Electronic Components', 'parent' => null],
-    ['name' => 'Passive Components',    'parent' => 'Electronic Components'],
-    ['name' => 'Crystal Oscillators',   'parent' => 'Passive Components'],
-];
-
-
 $dummy_tags = [
     'crystal', 'oscillator', '40mhz', 'smd', 'passive', 'timing', 'hcmos', 'ttl',
 ];
@@ -32,10 +24,7 @@ $pricing = [
     'offer' => $product->price['offer'],
     'cost' => $product->price['cost'],
 ];
-$stock = [
-    'stock_status' => $product->stock_status ?? 'outofstock',
-    'stock_quantity' => $product->stock_quantity ?? 0,
-];
+$stock = $product->stock ?? [];
 $categories = $product->categories ?? [];
 $page_content = $product->metadata['content'] ?? [];
 
@@ -115,6 +104,8 @@ $statusBadge = [
 
         <!-- Pricing -->
         <?= view('products/widgets/pricing', ['data' => $pricing ?? []],['saveData' => false]) ?> 
+        <!-- Stock -->        
+        <?= view('products/widgets/stock', ['data' => $stock ?? []],['saveData' => false]) ?> 
     </div>
 
     <!-- ── Right / sidebar column ── -->
@@ -122,8 +113,7 @@ $statusBadge = [
 
         <!-- Images -->
         <?= view('products/widgets/images', ['data' => $image_data ?? []],['saveData' => false]) ?> 
-        <!-- Stock -->        
-        <?= view('products/widgets/stock', ['data' => $stock ?? []],['saveData' => false]) ?> 
+        
 
         
 
