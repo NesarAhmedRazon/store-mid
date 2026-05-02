@@ -60,6 +60,7 @@ $routes->get('/', 'Auth::login');
 $routes->post('/login', 'Auth::attempt');
 $routes->get('/logout', 'Auth::logout');
 
+
 $routes->group('', ['filter' => 'auth'], function ($routes) {
 
     // All authenticated users
