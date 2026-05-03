@@ -200,6 +200,7 @@ class ProductFetcher
             'summaryAttr' => [],
             'docsMap'     => [],
             'metadataMap' => [],
+            'bulkPrice'   => [],
         ];
 
         if (empty($productIds)) {
@@ -214,6 +215,9 @@ class ProductFetcher
         $roles = ($mode === 'summary') ? ['thumbnail'] : ['thumbnail', 'gallery'];
         $sideLoads['mediaMap'] = $this->mediaModel->getForEntities('product', $productIds, $roles);
 
+        if ($mode !== 'minimal') {
+            $sideLoads['bulkPrice'] = $this->bulkGetMetaKey($productIds, 'trd_price');
+        }
         // Summary extra attributes
         if ($mode === 'summary') {
             $sideLoads['summaryAttr'] = $this->bulkGetNamedAttributes(
@@ -293,10 +297,12 @@ class ProductFetcher
             $offer_price = isset($product['price_offer']) ? (float) $product['price_offer'] : null;
             $buying_price = isset($product['price_buy']) ? $product['price_buy'] : 0;
             
+            
             $product['price'] = [
                 'sell'   => (float) $selling_price,
                 'regular'   => (float) $regular_price,
-                'offer'     => $offer_price,                
+                'offer'     => $offer_price,
+                'bulk'      => (float) ($sideLoads['bulkPrice'][$pid] ?? 0) ?: null,       
             ];
             if($internal){
                 $product['price']['cost'] = (float) $buying_price;
