@@ -297,12 +297,13 @@ class ProductFetcher
             $offer_price = isset($product['price_offer']) ? (float) $product['price_offer'] : null;
             $buying_price = isset($product['price_buy']) ? $product['price_buy'] : 0;
             
+            log_message('info',print_r(($sideLoads['bulkPrice'][$pid] ?? 0) ?: null,true));
             
             $product['price'] = [
                 'sell'   => (float) $selling_price,
                 'regular'   => (float) $regular_price,
                 'offer'     => $offer_price,
-                'bulk'      => (float) ($sideLoads['bulkPrice'][$pid] ?? 0) ?: null,       
+                'bulk'      => ($sideLoads['bulkPrice'][$pid] ?? 0) ?: null,       
             ];
             if($internal){
                 $product['price']['cost'] = (float) $buying_price;
