@@ -6,6 +6,8 @@ use App\Models\CategoryModel;
 use App\Models\MediaModel;
 use App\Models\MetaModel;
 use App\Libraries\ProductSorter;
+use App\Models\ProductModel;
+use App\Models\ProductContentModel;
 
 class ProductFetcher
 {
@@ -13,6 +15,7 @@ class ProductFetcher
     protected $mediaModel;
     protected $categoryModel;
     protected $metaModel;
+    protected $contentModel;
 
     public function __construct()
     {
@@ -20,6 +23,7 @@ class ProductFetcher
         $this->mediaModel    = new MediaModel();
         $this->categoryModel = new CategoryModel();
         $this->metaModel     = new MetaModel();
+        $this->contentModel = new ProductContentModel();
     }
 
     // ── Summary extra fields ──────────────────────────────────────────────
@@ -125,7 +129,7 @@ class ProductFetcher
      */
     public function getProduct(int $productId, array $options = []): ?array
     {
-        
+
         $mode           = $options['mode'] ?? 'full';
         $includeMeta    = $options['includeMeta'] ?? ($mode === 'full');
         $internal       = $options['internal'] ?? false;
@@ -157,7 +161,7 @@ class ProductFetcher
         // ------------------------------------------------------------------
         // 3. Transform using shared method
         // ------------------------------------------------------------------
-        return $this->transformProduct($product, $sideLoads, $mode, $includeMeta,$internal);
+        return $this->transformProduct($product, $sideLoads, $mode, $includeMeta, $internal);
     }
 
     /**
@@ -201,6 +205,7 @@ class ProductFetcher
             'docsMap'     => [],
             'metadataMap' => [],
             'bulkPrice'   => [],
+
         ];
 
         if (empty($productIds)) {
@@ -239,7 +244,7 @@ class ProductFetcher
      * Transform a single product record into the standardized output format
      * This is the SINGLE SOURCE OF TRUTH for product data structure
      */
-    private function transformProduct(array $product, array $sideLoads, string $mode, bool $includeMeta,bool $internal = false): array
+    private function transformProduct(array $product, array $sideLoads, string $mode, bool $includeMeta, bool $internal = false): array
     {
         $pid = $product['id'];
         $product['sku'] = $product['sku'];
@@ -268,11 +273,11 @@ class ProductFetcher
             $attrs = $sideLoads['summaryAttr'][$pid] ?? [];
             $product['brand']   = $attrs[self::ATTR_BRAND] ?? null;
             $product['mfr']     = $attrs[self::ATTR_MFR] ?? null;
-            $product['package'] = $attrs[self::ATTR_PKG] ?? null; 
+            $product['package'] = $attrs[self::ATTR_PKG] ?? null;
             $product['lcscId']  = $attrs[self::ATTR_LCSC] ?? null;
         }
 
-        
+
 
         // ------------------------------------------------------------------
         // Stock and Price information (for all non-minimal modes)
@@ -296,22 +301,25 @@ class ProductFetcher
             $regular_price = isset($product['price_regular']) ? $product['price_regular'] : 0;
             $offer_price = isset($product['price_offer']) ? (float) $product['price_offer'] : null;
             $buying_price = isset($product['price_buy']) ? $product['price_buy'] : 0;
-            
-            log_message('info',print_r(($sideLoads['bulkPrice'][$pid] ?? 0) ?: null,true));
-            
+
+            log_message('info', print_r(($sideLoads['bulkPrice'][$pid] ?? 0) ?: null, true));
+
             $product['price'] = [
                 'sell'   => (float) $selling_price,
                 'regular'   => (float) $regular_price,
                 'offer'     => $offer_price,
-                'bulk'      => ($sideLoads['bulkPrice'][$pid] ?? 0) ?: null,       
+                'bulk'      => ($sideLoads['bulkPrice'][$pid] ?? 0) ?: null,
             ];
-            if($internal){
+            if ($internal) {
                 $product['price']['cost'] = (float) $buying_price;
             }
             // Remove raw price fields
-            unset($product['price_sell'], $product['price_buy'],$product['price_regular'],$product['price_offer']);
+            unset($product['price_sell'], $product['price_buy'], $product['price_regular'], $product['price_offer']);
         }
 
+        if ($mode === 'full') {
+            $product['content'] = $this->contentModel->getForProduct($pid) ?? [];
+        }
         // ------------------------------------------------------------------
         // Full metadata
         // ------------------------------------------------------------------
@@ -322,7 +330,7 @@ class ProductFetcher
         // ------------------------------------------------------------------
         // Strip internal fields
         // ------------------------------------------------------------------
-        if(!$internal){
+        if (!$internal) {
             foreach (array_keys($product) as $key) {
                 if (strpos($key, 'wc_') === 0) unset($product[$key]);
             }

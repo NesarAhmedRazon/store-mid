@@ -10,6 +10,7 @@ use App\Models\ProductModel;
 use CodeIgniter\I18n\Time;
 use App\Models\CategoryModel;
 use App\Models\MetaModel;
+use App\Models\ProductContentModel;
 
 class Product extends ResourceController
 {
@@ -224,7 +225,10 @@ class Product extends ResourceController
                     );
                 }
             }
-
+            // ── Upsert product content (html + css) ─────────────────────
+            if (!empty($data['content']) && is_array($data['content'])) {
+                $this->handleContent($productId, $data['content']);
+            }
             $db->transComplete();
 
             if ($db->transStatus() === false) {
@@ -236,7 +240,7 @@ class Product extends ResourceController
             log_message('error', 'Product receive exception: ' . $e->getMessage());
             return $this->fail('Server error: ' . $e->getMessage(), 500);
         }
-log_message('info',print_r($data,true));
+        log_message('info', print_r($data, true));
         return $this->respond([
             'status'     => 'ok',
             'wc_id'      => $data['wc_id'],
@@ -324,5 +328,17 @@ log_message('info',print_r($data,true));
                 'is_primary'  => $index === 0 ? 1 : 0,
             ]);
         }
+    }
+
+    private function handleContent(int $productId, array $content): void
+    {
+        $html = $content['html'] ?? null;
+        $css  = $content['css']  ?? null;
+
+        if ($html === null && $css === null) {
+            return;
+        }
+
+        (new ProductContentModel())->upsert($productId, $html, $css);
     }
 }
