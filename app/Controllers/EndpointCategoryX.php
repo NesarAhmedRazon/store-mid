@@ -20,7 +20,7 @@ class EndpointCategoryX extends ResourceController
 
         // 1. Gather Inputs
         $modeInput = $this->request->getVar('mode');
-        $perPage   = max(1, (int) ($this->request->getVar('per_page') ?? 20));
+        $perPage   = max(1, (int) ($this->request->getVar('perPage') ?? 20));
         $pageInput = $this->request->getVar('page') ?? '1';
         $parent    = $this->request->getVar('parent');
 
@@ -87,7 +87,7 @@ class EndpointCategoryX extends ResourceController
 
         $mode    = $this->request->getGet('mode') ?? 'minimal';
         $pMode   = $this->request->getGet('pMode') ?? 'summary';
-        $perPage = $this->request->getGet('per_page') ?? 20;
+        $perPage = $this->request->getGet('perPage') ?? 20;
         $page    = $this->request->getGet('page') ?? 1;
 
         // Fetch Products logic handled by Library
@@ -96,6 +96,7 @@ class EndpointCategoryX extends ResourceController
 
 
         $fetcher = new ProductFetcher();
+        
         $result = $fetcher->getProducts([
             'categorySlug' => $categorySlug,
             'mode'         => $pMode,
@@ -108,7 +109,7 @@ class EndpointCategoryX extends ResourceController
 
         // 3. Construct the specific productData shape
         $productData = [
-            'total' => $result['total'] // Corrected 'totla' typo to 'total'
+            'total' => $result['total'] 
         ];
         // Only attach the actual product array if we aren't in minimal mode
         if ($mode !== 'minimal') {
@@ -116,9 +117,10 @@ class EndpointCategoryX extends ResourceController
         }
 
         return $this->respond([
-            'page'     => (int)$page,
-            'perPage'  => (int)$perPage,
-            'total'    => $totalProducts,
+            'page'       => (int)$page,
+            'perPage'    => (int)$perPage,
+            'total'      => (int)$result['total'],
+            'totalPages' => $perPage > 0 ? (int)ceil($result['total'] / $perPage) : 1,
             'category' => [
                 'id'          => $category->id,
                 'title'        => $category->name,
@@ -127,7 +129,7 @@ class EndpointCategoryX extends ResourceController
                 'parent_id'   => $category->parent_id,
                 'breadcrumb' => $breadcrumb
             ],
-            'products' => $productData,
+            'products' => $result['products'],
         ]);
     }
 

@@ -46,8 +46,8 @@ class ProductFetcher
         if ($mode === 'minimal') {
             $select = 'p.id, p.title, p.permalink, p.updated_at';
         } elseif ($mode === 'summary') {
-            // regular_price + sale_price come from the products table directly
-            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status,p.stock_quantity, p.stock_unit, p.regular_price, p.sale_price';
+            // price_regular + sale_price come from the products table directly
+            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status,p.stock_quantity, p.stock_unit, p.price_regular, p.sale_price';
         } else {
             $select = 'p.*';
         }
@@ -151,7 +151,7 @@ class ProductFetcher
                 $product['brand']   = $attrs[self::ATTR_BRAND] ?? null;
                 $product['mfr']     = $attrs[self::ATTR_MFR] ?? null;
                 $product['package'] = $attrs[self::ATTR_PKG] ?? null;
-                $product['price']   = $product['sale_price'] ? (float)$product['regular_price'] : (float)$product['regular_price'];
+                $product['price']   = $product['sale_price'] ? (float)$product['price_regular'] : (float)$product['price_regular'];
                 $product['lcscId']  = $attrs[self::ATTR_LCSC]  ?? null;
 
                 // remove the raw sale_price key — exposed as salePrice above

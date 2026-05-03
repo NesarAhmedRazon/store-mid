@@ -14,7 +14,7 @@ class ProductSorter
      * Sort and optionally filter a flat array of product rows.
      *
      * @param array  $products        Raw rows from DB (associative arrays)
-     * @param bool   $filterZeroPrice Remove products where regular_price = 0
+     * @param bool   $filterZeroPrice Remove products where price_regular = 0
      * @param string $sortDirection   'newest-first' | 'oldest-first' (by updated_at)
      *
      * @return array Sorted/filtered copy — original is not mutated
@@ -24,11 +24,13 @@ class ProductSorter
         bool   $filterZeroPrice = true,
         string $sortDirection   = 'newest-first'
     ): array {
+
+        
         // Step 1: filter zero-price products
         if ($filterZeroPrice) {
             $products = array_filter(
                 $products,
-                fn($p) => !empty($p['regular_price']) && (float) $p['regular_price'] !== 0.0
+                fn($p) => !empty($p['price_regular']) && (float) $p['price_regular'] !== 0.0
             );
         }
 

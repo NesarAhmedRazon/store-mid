@@ -48,7 +48,7 @@ class ProductFetcher
         if ($mode === 'minimal') {
             $select = 'p.id, p.title, p.permalink, p.updated_at';
         } elseif ($mode === 'summary') {
-            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status, p.stock_quantity, p.stock_unit, p.price_regular, p.price_offer, p.price_buy, p.price_sell';
+            $select = 'p.id, p.title, p.sku, p.permalink, p.updated_at, p.stock_status, p.stock_quantity, p.stock_unit, p.price_regular, p.price_offer, p.price_buy, p.price_sell';
         } else {
             $select = 'p.*';
         }
@@ -136,7 +136,7 @@ class ProductFetcher
         if ($mode === 'minimal') {
             $select = 'p.id, p.title, p.permalink, p.updated_at';
         } elseif ($mode === 'summary') {
-            $select = 'p.id, p.title, p.permalink, p.updated_at, p.stock_status, p.stock_quantity, p.stock_unit, p.price_regular, p.price_offer, p.price_buy, p.price_sell';
+            $select = 'p.id, p.title, p.sku, p.permalink, p.updated_at, p.stock_status, p.stock_quantity, p.stock_unit, p.price_regular, p.price_offer, p.price_buy, p.price_sell';
         } else {
             $select = 'p.*';
         }
@@ -238,6 +238,7 @@ class ProductFetcher
     private function transformProduct(array $product, array $sideLoads, string $mode, bool $includeMeta,bool $internal = false): array
     {
         $pid = $product['id'];
+        $product['sku'] = $product['sku'];
 
         // ------------------------------------------------------------------
         // Clean permalink

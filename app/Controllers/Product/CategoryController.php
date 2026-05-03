@@ -53,7 +53,7 @@ class CategoryController extends BaseController
         $products = [];
         if (!empty($productIds)) {
             $products = (new ProductModel())
-                ->select('id, title, permalink, stock_status, regular_price')
+                ->select('id, title, permalink, stock_status, price_regular')
                 ->whereIn('id', $productIds)
                 ->findAll();
         }
