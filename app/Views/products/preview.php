@@ -18,7 +18,7 @@ $dummy_tags = [
 
 
 $image_data = ['thumb' => $product->thumb,'gallery'=>$product->gallery ?? []];
-log_message('info',print_r($product->price,true));
+
 $pricing = [
     'regular' => $product->price['regular'],
     'offer' => $product->price['offer'],
@@ -26,7 +26,7 @@ $pricing = [
 ];
 $stock = $product->stock ?? [];
 $categories = $product->categories ?? [];
-$page_content = $product->metadata['content'] ?? [];
+$page_content = $product->content ?? [];
 
 
 $statusBadge = [

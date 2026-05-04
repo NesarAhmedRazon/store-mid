@@ -35,16 +35,18 @@ class ProductContentModel extends Model
      * @param string|null $html
      * @param string|null $css
      */
-    public function upsert(int $productId, ?string $html, ?string $css): void
+    public function upsert(int $productId, ?string $html, ?string $css, ?string $js): void
     {
+        
         $this->db->query(
-            'INSERT INTO product_content (product_id, html, css)
-             VALUES (?, ?, ?)
+            'INSERT INTO product_content (product_id, html, css, js)
+             VALUES (?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE
                  html       = VALUES(html),
                  css        = VALUES(css),
+                 js        = VALUES(js),
                  updated_at = CURRENT_TIMESTAMP',
-            [$productId, $html, $css]
+            [$productId, $html, $css, $js]
         );
     }
 
@@ -56,7 +58,7 @@ class ProductContentModel extends Model
      */
     public function getForProduct(int $productId): ?array
     {
-        $row = $this->select('html, css')
+        $row = $this->select('html, css,js')
                     ->where('product_id', $productId)
                     ->first();
 
@@ -71,7 +73,7 @@ class ProductContentModel extends Model
     {
         if (empty($productIds)) return [];
 
-        $rows = $this->select('product_id, html, css')
+        $rows = $this->select('product_id, html, css,js')
                      ->whereIn('product_id', $productIds)
                      ->findAll();
 
@@ -80,6 +82,7 @@ class ProductContentModel extends Model
             $result[(int) $row['product_id']] = [
                 'html' => $row['html'],
                 'css'  => $row['css'],
+                'js'  => $row['js'],
             ];
         }
 

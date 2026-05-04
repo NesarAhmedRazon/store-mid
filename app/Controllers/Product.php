@@ -49,10 +49,10 @@ class Product extends ResourceController
                 'stock_quantity' => $data['stock']['quantity'] ?? null,
                 'stock_unit'     => $data['stock']['unit'] ?? null,
                 'stock_status'   => $data['stock']['status'] ?? 'outofstock',
-                'price_offer'     => $data['price']['sale'] ?? null,
+                'price_offer'    => $data['price']['sale'] ?? null,
                 'price_regular'  => $data['price']['regular'] ?? 0,
-                'price_buy'           => $data['price']['cost'] ?? 0,
-                'price_sell'  => $data['price']['selling'] ?? 0,
+                'price_buy'      => $data['price']['cost'] ?? 0,
+                'price_sell'     => $data['price']['selling'] ?? 0,
                 'wc_created_at'  => $data['created_at'] ?? Time::now()->toDateTimeString(),
             ];
 
@@ -206,12 +206,12 @@ class Product extends ResourceController
                 'seo',
                 'smdp_moq',
                 'cogs_total_value',
-                'content',
                 'title_bn'
                 // Add other meta keys you want to process
             ];
 
             if (!empty($data['metas']) && is_array($data['metas'])) {
+
                 // Filter only the allowed meta keys
                 $filteredMeta = array_intersect_key($data['metas'], array_flip($allowedMetaKeys));
 
@@ -227,6 +227,7 @@ class Product extends ResourceController
             }
             // ── Upsert product content (html + css) ─────────────────────
             if (!empty($data['content']) && is_array($data['content'])) {
+
                 $this->handleContent($productId, $data['content']);
             }
             $db->transComplete();
@@ -240,7 +241,7 @@ class Product extends ResourceController
             log_message('error', 'Product receive exception: ' . $e->getMessage());
             return $this->fail('Server error: ' . $e->getMessage(), 500);
         }
-        log_message('info', print_r($data, true));
+
         return $this->respond([
             'status'     => 'ok',
             'wc_id'      => $data['wc_id'],
@@ -332,13 +333,16 @@ class Product extends ResourceController
 
     private function handleContent(int $productId, array $content): void
     {
+
         $html = $content['html'] ?? null;
         $css  = $content['css']  ?? null;
+        $js  = $content['js']  ?? null;
 
         if ($html === null && $css === null) {
             return;
         }
 
-        (new ProductContentModel())->upsert($productId, $html, $css);
+
+        (new ProductContentModel())->upsert($productId, $html, $css, $js);
     }
 }

@@ -6,6 +6,7 @@ use App\Models\ProductModel;
 use App\Models\MetaModel;
 use App\Libraries\AttributeService;
 use App\Models\CategoryModel;
+use App\Models\ProductContentModel;
 use App\Libraries\ProductFetcher;
 
 class AdminProducts extends BaseController
@@ -58,6 +59,9 @@ class AdminProducts extends BaseController
 
         $cats = new CategoryModel();
         $product->categories = $cats->getByProduct($product->id);
+
+        $content = new ProductContentModel();
+        $product->content = $content->getForProduct($product->id);
 
         $mediaModel      = new \App\Models\MediaModel();
         $media           = $mediaModel->getForEntity('product', $product->id);
