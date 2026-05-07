@@ -120,9 +120,9 @@ class CodeModel extends Model
         return array_map(fn($s) => [
             'title'        => $s->title,
             'language'     => $s->language,
-            'file_name'    => $s->file_name,
-            'file_dir'     => $s->file_dir,
-            'editor_theme' => $s->editor_theme,
+            'fileName'    => $s->file_name,
+            'fileDir'     => $s->file_dir,
+            'theme' => $s->editor_theme,
             'code'         => $s->code,
         ], $snippets);
     }
