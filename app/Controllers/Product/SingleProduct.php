@@ -107,9 +107,16 @@ class SingleProduct extends ResourceController
         if ($mode !== 'minimal') {
             $product['attributes'] = $this->fetchAttributes($db, $productId);
         }
-
         // ------------------------------------------------------------------
-        // 7. Respond
+        // 7. Add code snippets (full mode only)
+        // ------------------------------------------------------------------
+        if ($mode === 'full') {
+            $codeModel           = new \App\Models\CodeModel();
+            $snippets            = $codeModel->getByProduct($productId);
+            $product['programming'] = $codeModel->formatForApi($snippets);
+        }
+        // ------------------------------------------------------------------
+        // 8. Respond
         // ------------------------------------------------------------------
         return $this->respond([
             'status'  => 'ok',

@@ -12,12 +12,19 @@
 
 
 $dummy_tags = [
-    'crystal', 'oscillator', '40mhz', 'smd', 'passive', 'timing', 'hcmos', 'ttl',
+    'crystal',
+    'oscillator',
+    '40mhz',
+    'smd',
+    'passive',
+    'timing',
+    'hcmos',
+    'ttl',
 ];
 
 
 
-$image_data = ['thumb' => $product->thumb,'gallery'=>$product->gallery ?? []];
+$image_data = ['thumb' => $product->thumb, 'gallery' => $product->gallery ?? []];
 
 $pricing = [
     'regular' => $product->price['regular'],
@@ -34,6 +41,57 @@ $statusBadge = [
     'outofstock'  => 'down',
     'onbackorder' => 'warn',
 ];
+
+
+
+
+$codes = $product->programming;
+$tabs = [
+    [
+        'tabLabel' => 'Product Info',
+        'tabId' => 'product_info',
+        'data' => $product ?? [],
+        'view' => 'products/widgets/product_info'
+    ],
+    [
+        'tabLabel' => 'Categories',
+        'tabId' => 'categories',
+        'data' => $categories ?? [],
+        'view' => 'products/widgets/categories'
+    ],
+    [
+        'tabLabel' => 'Attributs',
+        'tabId' => 'attributs',
+        'data' => $product->attributes ?? [],
+        'view' => 'products/widgets/attributs'
+    ],
+
+];
+if (count($page_content) > 0) {
+
+    $tabs[] = [
+        'tabLabel' => 'Content',
+        'tabId' => 'page_content',
+        'data' => $page_content ?? [],
+        'view' => 'products/widgets/content'
+    ];
+}
+
+if (count($codes) > 0) {
+    $tabs[] = [
+        'tabLabel' => 'Programming',
+        'tabId' => 'code_content',
+        'data' => [
+            'snippets' => $codes,
+            'isEdit' => false,
+            'productId' => $product->id
+        ] ?? [],
+        'view' => 'products/widgets/code_viewer'
+    ];
+}
+
+
+
 ?>
 
 <!-- Breadcrumb -->
@@ -54,12 +112,10 @@ $statusBadge = [
     </div>
 
     <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-        <a href="<?= esc($product->permalink) ?>" target="_blank"
-           class="flex-1 sm:flex-none text-center text-[11px] font-mono text-subtle no-underline px-2.5 py-1 border border-border rounded hover:border-border-md hover:text-muted transition-colors">
+        <a href="<?= esc($product->permalink) ?>" target="_blank" class="flex-1 sm:flex-none text-center text-[11px] font-mono text-subtle no-underline px-2.5 py-1 border border-border rounded hover:border-border-md hover:text-muted transition-colors">
             view on store ↗
         </a>
-        <a href="/products/edit?id=<?= $product->id ?>"
-           class="flex-1 sm:flex-none text-center text-[11px] font-mono text-text no-underline px-2.5 py-1 border border-border-md rounded hover:bg-bg transition-colors">
+        <a href="/products/edit?id=<?= $product->id ?>" class="flex-1 sm:flex-none text-center text-[11px] font-mono text-text no-underline px-2.5 py-1 border border-border-md rounded hover:bg-bg transition-colors">
             edit →
         </a>
     </div>
@@ -70,52 +126,29 @@ $statusBadge = [
 
     <!-- ── Left / main column ── -->
     <div class="col-span-1 sm:col-span-2 flex flex-col gap-4">
-        
+
 
         <!-- Attributes -->
-        <?= view('products/widgets/tabs', ['data' => [
-                                                [
-                                                    'tabLabel' => 'Product Info',
-                                                    'tabId' => 'product_info',
-                                                    'data' => $product ?? [],
-                                                    'view' => 'products/widgets/product_info'
-                                                ],
-                                                [
-                                                    'tabLabel' => 'Categories',
-                                                    'tabId' => 'categories',
-                                                    'data' => $categories ?? [],
-                                                    'view' => 'products/widgets/categories'
-                                                ],
-                                                [
-                                                    'tabLabel' => 'Attributs',
-                                                    'tabId' => 'attributs',
-                                                    'data' => $product->attributes ?? [],
-                                                    'view' => 'products/widgets/attributs'
-                                                ],
-                                                [
-                                                    'tabLabel' => 'Content',
-                                                    'tabId' => 'page_content',
-                                                    'data' => $page_content ?? [],
-                                                    'view' => 'products/widgets/content'
-                                                ],
-                                         ],['saveData' => false]
-                                         ]) ?> 
-        
+        <?= view('products/widgets/tabs', [
+            'data' => $tabs,
+            ['saveData' => false]
+        ]) ?>
+
 
         <!-- Pricing -->
-        <?= view('products/widgets/pricing', ['data' => $pricing ?? []],['saveData' => false]) ?> 
-        <!-- Stock -->        
-        <?= view('products/widgets/stock', ['data' => $stock ?? []],['saveData' => false]) ?> 
+        <?= view('products/widgets/pricing', ['data' => $pricing ?? []], ['saveData' => false]) ?>
+        <!-- Stock -->
+        <?= view('products/widgets/stock', ['data' => $stock ?? []], ['saveData' => false]) ?>
     </div>
 
     <!-- ── Right / sidebar column ── -->
     <div class="col-span-1 flex flex-col gap-4">
 
         <!-- Images -->
-        <?= view('products/widgets/images', ['data' => $image_data ?? []],['saveData' => false]) ?> 
-        
+        <?= view('products/widgets/images', ['data' => $image_data ?? []], ['saveData' => false]) ?>
 
-        
+
+
 
         <!-- Tags -->
         <div class="card">

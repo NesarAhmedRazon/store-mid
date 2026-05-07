@@ -8,16 +8,19 @@ use App\Libraries\AttributeService;
 use App\Models\CategoryModel;
 use App\Models\ProductContentModel;
 use App\Libraries\ProductFetcher;
+use App\Models\CodeModel;
 
 class AdminProducts extends BaseController
 {
     protected ProductModel $model;
     protected MetaModel    $meta;
+    protected CodeModel $code;
 
     public function __construct()
     {
         $this->model = new ProductModel();
         $this->meta  = new MetaModel();
+        $this->code  = new CodeModel();
     }
 
     // ── Index ─────────────────────────────────────────────────────────────
@@ -68,6 +71,8 @@ class AdminProducts extends BaseController
         $product->thumb  = $media['thumbnail'];
         $product->gallery = $media['gallery'];
 
+        $product->programming = $this->code->getByProduct($product->id);
+
         return view('products/preview', [
             'title'   => $product->title,
             'product' => $product,
@@ -83,6 +88,7 @@ class AdminProducts extends BaseController
             'mode'       => 'create',
             'product'    => null,
             'meta'       => [],
+            'snippets'   => [],  
             'formAction' => '/products/store',
             'errors'     => session()->getFlashdata('errors') ?? [],
         ]);
@@ -121,6 +127,11 @@ class AdminProducts extends BaseController
 
         $this->saveMeta($id, $data);
 
+        // ── Sync code snippets ────────────────────────────────────────
+        if (!empty($data['code']) && is_array($data['code'])) {
+            $this->code->syncForProduct($id, $data['code']);
+        }
+
         session()->setFlashdata('success', 'Product created.');
         return redirect()->to("/products/preview?id={$id}");
     }
@@ -147,6 +158,7 @@ class AdminProducts extends BaseController
             'mode'       => 'edit',
             'product'    => $product,
             'meta'       => $meta,
+            'snippets'   => $this->code->getByProduct($id),
             'formAction' => "/products/update?id={$id}",
             'errors'     => session()->getFlashdata('errors') ?? [],
         ]);
@@ -154,7 +166,7 @@ class AdminProducts extends BaseController
 
     // ── Update — POST /products/update?id=1 ──────────────────────────────
 
-    public function update($id)
+    public function update()
     {
         $id = (int) $this->request->getGet('id');
 
@@ -189,6 +201,11 @@ class AdminProducts extends BaseController
         }
 
         $this->saveMeta($id, $data);
+
+        // ── Sync code snippets ────────────────────────────────────────
+        if (isset($data['code']) && is_array($data['code'])) {
+            (new \App\Models\CodeModel())->syncForProduct($id, $data['code']);
+        }
 
         session()->setFlashdata('success', 'Product updated.');
         return redirect()->to("/products/preview?id={$id}");

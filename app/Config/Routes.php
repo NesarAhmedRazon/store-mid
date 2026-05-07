@@ -76,7 +76,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 
         // Edit / Update
         $routes->get('edit',     'AdminProducts::edit');     // ?id=1
-        $routes->post('update',  'AdminProducts::update');   // ?id=1
+        $routes->put('update',  'AdminProducts::update');   // ?id=1
 
 
         // Product Categories
